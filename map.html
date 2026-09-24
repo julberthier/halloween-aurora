@@ -116,6 +116,15 @@
   50%{box-shadow:0 0 14px rgba(0,200,255,1);transform:scale(1.25)}
 }
 .map-hint{font-size:clamp(.52em,1.4vmin,.72em);color:#4d7f9e;letter-spacing:.3em;text-transform:uppercase;text-align:center}
+.map-directive{
+  font-size:clamp(.58em,1.7vmin,.82em);color:var(--blue-soft);
+  letter-spacing:.22em;text-transform:uppercase;text-align:center;
+  padding:clamp(4px,1vmin,10px) clamp(10px,2.5vw,26px);
+  border:1px solid rgba(0,200,255,.35);
+  background:rgba(0,200,255,.07);
+  max-width:min(94vw,820px);
+}
+.map-directive::before{content:"";margin-right:.1em}
 
 /* écran « redevient confidentielle » */
 #confidential-screen{
@@ -261,6 +270,7 @@
       <span class="li" style="--i:3"><i></i>SITE-04</span>
       <span class="li" style="--i:4"><i></i>SITE-05</span>
     </div>
+    <div class="map-directive">▸ Vous devez toujours consulter le registre avant de partir en expédition</div>
     <div class="map-hint" id="map-hint">Rendez-vous au point de rassemblement une fois les 5 lampes trouvées</div>
     <button class="skip-btn" id="skip-map">Passer ▸▸</button>
   </main>
