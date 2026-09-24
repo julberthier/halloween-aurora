@@ -134,6 +134,14 @@ canvas{width:100%;height:100%;display:block}
   font-family:var(--font-title);font-weight:900;
   font-size:clamp(2.6em,12vmin,6.5em);color:var(--white);
   text-shadow:0 0 30px rgba(0,200,255,.8);
+  font-variant-numeric:tabular-nums;   /* largeur identique pour tous les chiffres */
+  min-width:1.2em;text-align:center;    /* centré stable, pas de saut de position */
+}
+.countdown-num.pop{animation:countPop .45s cubic-bezier(.2,1.4,.4,1)}
+@keyframes countPop{
+  0%  {transform:scale(1.6);opacity:.2;filter:blur(4px)}
+  60% {transform:scale(.96);opacity:1;filter:blur(0)}
+  100%{transform:scale(1)}
 }
 
 @media (max-height:560px){
@@ -383,6 +391,7 @@ function endReached(){
   var left = Math.round(VIDEO_DELAY_MS / 1000);
   ov.classList.add("show");
   num.textContent = String(left);
+  num.classList.remove("pop"); void num.offsetWidth; num.classList.add("pop");
   pendingTimer = setInterval(function(){
     left--;
     if (left <= 0){
@@ -391,6 +400,7 @@ function endReached(){
       AURORA.goPage({ url:"map.html", stage:"map", fx:"iris" });
     } else {
       num.textContent = String(left);
+      num.classList.remove("pop"); void num.offsetWidth; num.classList.add("pop");
       AURORA.sfx("bip", 0.18);
     }
   }, 1000);
