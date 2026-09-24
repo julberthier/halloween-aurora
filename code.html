@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURORA // GRID — 04 Authentification</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%2300c8ff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css?v=4">
+<style>
+/* ═══════════ PHASE 04 — CODE D'ANNIHILATION ═══════════ */
+#viewport-code{gap:clamp(10px,2vh,20px)}
+.code-title{
+  font-family:var(--font-title);font-weight:700;
+  font-size:clamp(.8em,2.6vmin,1.4em);letter-spacing:.26em;text-indent:.26em;
+  color:var(--white);text-transform:uppercase;text-align:center;
+  text-shadow:0 0 16px rgba(0,200,255,.6);
+}
+.code-title small{display:block;margin-top:5px;font-family:var(--font-mono);font-weight:400;
+  font-size:.52em;color:var(--blue);letter-spacing:.4em}
+.code-panel{
+  position:relative;
+  padding:clamp(12px,2.4vmin,26px) clamp(12px,2.6vmin,30px);
+  border:1px solid rgba(0,200,255,.4);
+  background:linear-gradient(180deg,rgba(0,200,255,.06),rgba(0,0,0,.4));
+  box-shadow:0 0 40px rgba(0,200,255,.1),inset 0 0 50px rgba(0,30,60,.4);
+  display:flex;flex-direction:column;align-items:center;gap:clamp(10px,2vh,18px);
+}
+.code-panel.rejected{animation:rejectShake .5s ease}
+@keyframes rejectShake{
+  0%,100%{transform:translateX(0)}
+  15%{transform:translateX(-12px);box-shadow:0 0 50px rgba(255,255,255,.4)}
+  35%{transform:translateX(10px)}55%{transform:translateX(-7px)}75%{transform:translateX(4px)}
+}
+.code-cells{display:flex;align-items:center;gap:clamp(3px,.9vmin,8px);flex-wrap:wrap;justify-content:center}
+.cell{
+  width:clamp(30px,6.4vmin,58px);height:clamp(42px,9vmin,82px);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-title);font-weight:700;
+  font-size:clamp(1.1em,4.4vmin,2.3em);
+  color:var(--white);
+  background:rgba(0,10,25,.85);
+  border:1px solid rgba(0,200,255,.4);
+  border-bottom:3px solid var(--blue);
+  cursor:pointer;transition:all .12s ease;
+  text-shadow:0 0 12px rgba(0,200,255,.6);
+}
+.cell.fixed{color:var(--blue);border-bottom-color:var(--blue-dim);cursor:default;background:rgba(0,30,55,.5)}
+.cell.valid{color:#001018;background:#00ff6a;border-color:#00ff6a;border-bottom-color:#00ff6a;cursor:default;text-shadow:none;animation:cellPop .35s ease;box-shadow:0 0 14px rgba(0,255,106,.55)}
+.cell.wrong{color:#ff8fa0;background:rgba(255,30,60,.16);border-color:#ff1e3c;border-bottom-color:#ff1e3c;animation:cellWrongBlink .3s steps(2) 2}
+@keyframes cellWrongBlink{50%{background:rgba(255,30,60,.4)}}
+@keyframes cellPop{0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}}
+@keyframes groupShake{
+  0%,100%{transform:translateX(0)}
+  15%{transform:translateX(-10px)}
+  30%{transform:translateX(9px)}
+  45%{transform:translateX(-7px)}
+  60%{transform:translateX(5px)}
+  75%{transform:translateX(-3px)}
+}
+.cell-group{display:flex;align-items:center;gap:clamp(3px,.9vmin,8px)}
+.cell-group.shaking{animation:groupShake .55s ease}
+.cell.cursor{border-color:var(--white);border-bottom-color:var(--white);box-shadow:0 0 14px rgba(255,255,255,.35);animation:cellCursor .9s steps(2) infinite}
+@keyframes cellCursor{50%{border-bottom-color:rgba(255,255,255,.2)}}
+.cell-sep{width:clamp(8px,2vmin,18px);height:2px;background:rgba(0,200,255,.5)}
+.code-sub{font-size:clamp(.5em,1.4vmin,.68em);letter-spacing:.24em;color:#4d7f9e;text-transform:uppercase}
+.keypad{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(5px,1vmin,10px);max-width:min(86vw,560px)}
+.key{
+  min-width:clamp(44px,9vmin,74px);height:clamp(40px,8vmin,64px);
+  background:rgba(0,200,255,.06);color:var(--ink);
+  border:1px solid rgba(0,200,255,.45);
+  font-family:var(--font-title);font-weight:700;font-size:clamp(.95em,3vmin,1.5em);
+  transition:all .1s ease;
+}
+.key:hover{background:rgba(0,200,255,.22);box-shadow:0 0 14px rgba(0,200,255,.4)}
+.key:active{transform:scale(.93);background:var(--blue);color:#001018}
+.key.wide{min-width:clamp(70px,14vmin,110px);font-size:clamp(.6em,1.8vmin,.85em);letter-spacing:.14em}
+.key.ok{border-color:var(--white);color:var(--white);background:rgba(0,200,255,.15)}
+.key.ok:hover{background:rgba(0,200,255,.35);box-shadow:0 0 16px rgba(0,200,255,.6)}
+.key[disabled]{opacity:.35;cursor:not-allowed}
+.secret-row{display:flex;flex-direction:column;align-items:center;gap:6px}
+.secret-label{font-size:clamp(.55em,1.6vmin,.75em);letter-spacing:.3em;color:var(--blue);text-transform:uppercase}
+#secret-input{
+  width:min(80vw,420px);
+  background:rgba(0,10,25,.85);color:var(--white);
+  border:1px solid rgba(0,200,255,.4);border-bottom:3px solid var(--blue);
+  padding:clamp(7px,1.4vmin,12px) clamp(10px,2vmin,16px);
+  font-family:var(--font-mono);font-size:clamp(.85em,2.6vmin,1.2em);
+  letter-spacing:.2em;text-align:center;text-transform:uppercase;
+  outline:none;
+}
+#secret-input:focus{border-color:var(--white);box-shadow:0 0 16px rgba(255,255,255,.25)}
+.code-msg{
+  min-height:1.5em;text-align:center;
+  font-size:clamp(.6em,1.8vmin,.85em);letter-spacing:.3em;text-transform:uppercase;
+  color:var(--blue);
+}
+.code-msg.err{color:var(--white);text-shadow:0 0 10px rgba(255,255,255,.5);animation:hudBlink .7s steps(2) 3}
+.code-msg.ok{color:var(--white);text-shadow:0 0 14px rgba(0,200,255,.9)}
+#attempts{font-size:clamp(.5em,1.3vmin,.65em);color:#4d7f9e;letter-spacing:.3em}
+
+/* flash d'implosion local avant navigation */
+#implode-flash{
+  position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:85;
+}
+#implode-flash.go{animation:impFlash 1.56s cubic-bezier(.6,0,.9,.4) forwards}
+@keyframes impFlash{
+  0%,60%{opacity:0}
+  78%{opacity:.9}
+  100%{opacity:1}
+}
+
+@media (max-height:560px){
+  .cell{height:clamp(34px,7vmin,52px);width:clamp(24px,5vmin,44px);font-size:clamp(.9em,3.4vmin,1.6em)}
+  .key{min-width:clamp(36px,7.5vmin,60px);height:clamp(30px,6.5vmin,46px);font-size:clamp(.8em,2.4vmin,1.2em)}
+  .key.wide{min-width:clamp(58px,12vmin,96px)}
+  .keypad{gap:4px}
+  #viewport-code{gap:6px}
+  .code-panel{gap:6px;padding:8px 12px}
+  .secret-row{gap:3px}
+  #secret-input{padding:4px 10px}
+  .code-title{font-size:clamp(.65em,2vmin,1em)}
+  .code-title small{margin-top:2px}
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <header id="topbar">
+    <div class="hud-left">
+      <span class="cursor-block">AURORA&nbsp;//&nbsp;GRID&nbsp;DEF-7</span>
+      <span class="hud-blink" style="color:var(--white)">■&nbsp;VERROU</span>
+    </div>
+    <div class="hud-left">
+      <span id="clock">--:--:--</span>
+      <span id="syshex">SYS:0F.A2</span>
+      <span><span class="rec-dot"></span>REC</span>
+    </div>
+  </header>
+
+  <main class="stage-viewport" id="viewport-code">
+    <div class="code-title">
+      Authentification — code d'annihilation des métamorphes
+      <small>10 chiffres manquants · 5 chiffres verrouillés</small>
+    </div>
+    <div class="code-panel" id="code-panel">
+      <div class="code-cells" id="code-cells">
+        <div class="cell-group" id="grp-0"></div><div class="cell-sep"></div><div class="cell-group" id="grp-1"></div><div class="cell-sep"></div><div class="cell-group" id="grp-2"></div>
+      </div>
+      <div class="code-sub">Saisir les chiffres manquants — pavé ou clavier physique</div>
+      <div class="keypad" id="keypad"></div>
+      <div class="secret-row">
+        <div class="secret-label">Réponse à la question secrète</div>
+        <input id="secret-input" type="text" autocomplete="off" spellcheck="false" maxlength="40" placeholder="■■■■■■■■">
+      </div>
+      <div class="code-msg" id="code-msg"></div>
+      <div id="attempts">TENTATIVES : 0</div>
+    </div>
+    <button class="skip-btn" id="skip-code">Passer ▸▸</button>
+  </main>
+
+  <footer id="botbar">
+    <div class="hud-left">
+      <span>RÉSEAU AURORA // ACCÈS RESTREINT</span>
+      <span id="stage-label">PHASE 04/05 — AUTHENTIFICATION</span>
+    </div>
+    <div class="hud-left">
+      <span>SECTEUR FECAMP — NUIT DU 14.10</span>
+      <span class="hud-blink">▮ SIGNAL CHIFFRÉ</span>
+    </div>
+  </footer>
+</div>
+
+<div id="implode-flash"></div>
+<div id="flash"></div>
+<div id="static-overlay"></div>
+<div id="scanlines"></div>
+<div class="vignette"></div>
+
+<script src="assets/core.js?v=4"></script>
+<script>
+(function(){
+"use strict";
+AURORA.boot("code");
+AURORA.sfxPreload(["bip","erreur","succes","boom"]);
+
+/* ---------- CONFIG locale ---------- */
+var PATTERN = "XXX45XXX78XXX9X";   /* X = à trouver, chiffre = verrouillé */
+/* empreintes par groupe de 5 — le code complet n'existe jamais en clair */
+var H_GROUPS = [663770569, 1958691859, 3247646474];
+
+var digits = new Array(15).fill("");
+var cursor = 0;
+var attempts = 0;
+var lockUntil = 0;
+
+function buildCells(){
+  for (var g = 0; g < 3; g++){
+    var grp = document.getElementById("grp-" + g);
+    grp.innerHTML = "";
+    for (var k = 0; k < 5; k++){
+      (function(idx){
+        var c = document.createElement("div");
+        c.className = "cell";
+        if (PATTERN.charAt(idx) !== "X"){
+          digits[idx] = PATTERN.charAt(idx);
+          c.classList.add("fixed");
+          c.textContent = PATTERN.charAt(idx);
+        } else {
+          c.addEventListener("click", function(){ setCursor(idx); });
+        }
+        grp.appendChild(c);
+      })(g * 5 + k);
+    }
+  }
+  renderCells();
+}
+function setCursor(idx){
+  if (PATTERN.charAt(idx) !== "X") return;
+  cursor = idx;
+  renderCells();
+  AURORA.sfx("bip", 0.18);
+}
+function cellAt(i){ return document.getElementById("grp-" + Math.floor(i / 5)).children[i % 5]; }
+function renderCells(){
+  for (var i = 0; i < 15; i++){
+    var c = cellAt(i);
+    if (PATTERN.charAt(i) === "X" && !c.classList.contains("valid")){
+      c.textContent = digits[i] === "" ? "·" : digits[i];
+      c.classList.toggle("cursor", i === cursor);
+    }
+  }
+}
+function pressDigit(d){
+  if (PATTERN.charAt(cursor) !== "X") return;
+  var cur = cellAt(cursor);
+  if (cur.classList.contains("valid")) return;   /* groupe validé : verrouillé */
+  digits[cursor] = d;
+  AURORA.sfx("bip", 0.22);
+  var n = cursor + 1;
+  while (n < 15 && PATTERN.charAt(n) !== "X") n++;
+  if (n < 15) cursor = n;
+  renderCells();
+  checkGroup(Math.floor((n - 1) / 5));
+}
+function pressDel(){
+  if (PATTERN.charAt(cursor) === "X" && digits[cursor] !== ""){
+    digits[cursor] = "";
+  } else {
+    var p = cursor - 1;
+    while (p >= 0 && PATTERN.charAt(p) !== "X") p--;
+    if (p >= 0){ cursor = p; digits[p] = ""; }
+  }
+  renderCells();
+}
+function buildKeypad(){
+  var kp = document.getElementById("keypad");
+  ["1","2","3","4","5","6","7","8","9","0"].forEach(function(k){
+    var b = document.createElement("button");
+    b.className = "key";
+    b.textContent = k;
+    b.addEventListener("click", function(){ pressDigit(k); });
+    kp.appendChild(b);
+  });
+  var del = document.createElement("button");
+  del.className = "key wide";
+  del.textContent = "⌫ EFFACER";
+  del.addEventListener("click", pressDel);
+  kp.appendChild(del);
+  var ok = document.createElement("button");
+  ok.className = "key wide ok";
+  ok.id = "key-ok";
+  ok.textContent = "VALIDER";
+  ok.addEventListener("click", tryCode);
+  kp.appendChild(ok);
+}
+function codeComplete(){
+  for (var i = 0; i < 15; i++){ if (digits[i] === "") return false; }
+  return true;
+}
+function rejectAnim(txt){
+  var p = document.getElementById("code-panel");
+  var msg = document.getElementById("code-msg");
+  msg.className = "code-msg err";
+  msg.textContent = txt;
+  p.classList.remove("rejected"); void p.offsetWidth; p.classList.add("rejected");
+}
+/* ---------- validation visuelle progressive par groupe ---------- */
+function groupState(g){
+  for (var i = g * 5; i < g * 5 + 5; i++){
+    if (digits[i] === "") return "incomplete";
+  }
+  var str = digits.slice(g * 5, g * 5 + 5).join("");
+  return (AURORA.djb2(AURORA.SEED + "|g" + g + "|" + str) === H_GROUPS[g]) ? "ok" : "bad";
+}
+function checkGroup(g){
+  if (g < 0 || g > 2) return;
+  var st = groupState(g);
+  if (st === "ok"){
+    for (var i = g * 5; i < g * 5 + 5; i++){
+      var c = cellAt(i);
+      c.classList.remove("wrong","cursor");
+      c.classList.add("valid");
+    }
+    AURORA.sfx("succes", 0.4);
+    for (var j = 0; j < 15; j++){
+      if (PATTERN.charAt(j) === "X" && !cellAt(j).classList.contains("valid")){ cursor = j; break; }
+    }
+    renderCells();
+  } else if (st === "bad"){
+    var grp = document.getElementById("grp-" + g);
+    for (var i2 = g * 5; i2 < g * 5 + 5; i2++){
+      if (PATTERN.charAt(i2) === "X") cellAt(i2).classList.add("wrong");
+    }
+    AURORA.sfx("erreur", 0.45);
+    grp.classList.remove("shaking"); void grp.offsetWidth; grp.classList.add("shaking");
+    setTimeout(function(){
+      if (groupState(g) === "ok") return;   /* groupe corrigé entre-temps : on garde tout */
+      for (var i3 = g * 5; i3 < g * 5 + 5; i3++){
+        var c3 = cellAt(i3);
+        if (PATTERN.charAt(i3) === "X"){ c3.classList.remove("wrong"); digits[i3] = ""; }
+      }
+      /* revient sur la première case à saisir du groupe fautif */
+      for (var i4 = g * 5; i4 < g * 5 + 5; i4++){
+        if (PATTERN.charAt(i4) === "X"){ cursor = i4; break; }
+      }
+      renderCells();
+    }, 650);
+  }
+}
+function tryCode(){
+  if (Date.now() < lockUntil) return;
+  var msg = document.getElementById("code-msg");
+  var secret = document.getElementById("secret-input").value.trim().toLowerCase();
+  if (!codeComplete()){
+    AURORA.sfx("erreur", 0.4);
+    rejectAnim("Code incomplet — 15 chiffres requis");
+    return;
+  }
+  if (secret === ""){
+    AURORA.sfx("erreur", 0.4);
+    rejectAnim("Question secrète obligatoire");
+    return;
+  }
+  var code = digits.join("");
+  if (AURORA.djb2(AURORA.SEED + "|" + code + "|" + secret) === AURORA.H_CODE){
+    /* ═══ SUCCÈS → IMPLOSION → FINALE ═══ */
+    msg.className = "code-msg ok";
+    msg.textContent = "Accès accordé — annihilation engagée";
+    AURORA.sfx("succes", 0.55);
+    setTimeout(function(){ AURORA.sfx("boom", 0.85); }, 250);
+    var imp = document.getElementById("implode-flash");
+    setTimeout(function(){
+      document.body.classList.add("page-exit-implode");
+      imp.classList.add("go");
+      setTimeout(function(){
+        AURORA.goPage({ url:"finale.html", stage:"finale", fx:"none" });
+      }, 1560);
+    }, 650);
+  } else {
+    attempts++;
+    document.getElementById("attempts").textContent = "TENTATIVES : " + attempts;
+    AURORA.sfx("erreur", 0.5);
+    if (attempts >= 3){
+      lockUntil = Date.now() + 15000;
+      var left = 15;
+      var btn = document.getElementById("key-ok");
+      btn.disabled = true;
+      var lv = setInterval(function(){
+        left--;
+        if (left <= 0){
+          clearInterval(lv);
+          btn.disabled = false;
+          btn.textContent = "VALIDER";
+          msg.className = "code-msg";
+          msg.textContent = "";
+        } else {
+          btn.textContent = "VERROUILLÉ " + left + "s";
+        }
+      }, 1000);
+      rejectAnim("Code rejeté — verrouillage temporisé 15 s");
+    } else {
+      rejectAnim("Code rejeté — tentative enregistrée");
+    }
+  }
+}
+
+/* clavier physique */
+document.addEventListener("keydown", function(e){
+  if (/^[0-9]$/.test(e.key)){ pressDigit(e.key); }
+  else if (e.key === "Backspace"){ e.preventDefault(); pressDel(); }
+  else if (e.key === "ArrowLeft"){
+    var p = cursor - 1; while (p >= 0 && PATTERN.charAt(p) !== "X") p--;
+    if (p >= 0){ cursor = p; renderCells(); }
+  }
+  else if (e.key === "ArrowRight"){
+    var n = cursor + 1; while (n < 15 && PATTERN.charAt(n) !== "X") n++;
+    if (n < 15){ cursor = n; renderCells(); }
+  }
+  else if (e.key === "Enter"){ tryCode(); }
+});
+document.getElementById("secret-input").addEventListener("keydown", function(e){
+  if (e.key === "Enter") tryCode();
+});
+
+buildCells();
+buildKeypad();
+
+/* debug */
+document.getElementById("skip-code").addEventListener("click", function(){
+  AURORA.goPage({ url:"finale.html", stage:"finale", fx:"blast" });
+});
+
+})();
+</script>
+</body>
+</html>

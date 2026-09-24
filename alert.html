@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURORA // GRID — 01 Veille</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%2300c8ff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css?v=4">
+<style>
+/* ═══════════ PHASE 01 — ALERTE / BOUTON ROUGE ═══════════ */
+#viewport-alert{
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 108%,rgba(0,200,255,.16),transparent 60%),
+    radial-gradient(ellipse 60% 45% at 50% -10%,rgba(0,120,220,.10),transparent 60%);
+}
+.grid3d{
+  position:absolute;left:-25%;right:-25%;bottom:-8%;height:52%;
+  background:
+    repeating-linear-gradient(90deg,rgba(0,200,255,.22) 0 2px,transparent 2px 90px),
+    repeating-linear-gradient(0deg,rgba(0,200,255,.22) 0 2px,transparent 2px 70px);
+  transform:perspective(520px) rotateX(62deg);
+  transform-origin:50% 100%;
+  animation:gridScroll 3.2s linear infinite;
+  opacity:.5;pointer-events:none;
+  mask-image:linear-gradient(180deg,transparent,#000 32%);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 32%);
+}
+@keyframes gridScroll{to{background-position:0 70px,0 70px}}
+
+.alert-header{position:relative;text-align:center;margin-bottom:clamp(14px,4vh,44px)}
+.alert-title{
+  font-family:var(--font-title);font-weight:900;
+  font-size:clamp(1.2em,5.2vmin,2.6em);
+  letter-spacing:.42em;text-indent:.42em;
+  color:var(--white);
+  text-shadow:0 0 18px rgba(0,200,255,.75),0 0 60px rgba(0,150,255,.35);
+}
+.alert-sub{
+  margin-top:clamp(6px,1.4vh,14px);
+  font-size:clamp(.62em,1.9vmin,.95em);
+  letter-spacing:.5em;text-indent:.5em;
+  color:var(--blue);
+  text-transform:uppercase;
+}
+.glitch{position:relative;display:inline-block}
+.glitch::before,.glitch::after{
+  content:attr(data-text);position:absolute;inset:0;overflow:hidden;opacity:.85;
+}
+.glitch::before{color:var(--white);transform:translate(2px,0);clip-path:inset(12% 0 58% 0);animation:glA 3.1s steps(2) infinite}
+.glitch::after{color:var(--blue);transform:translate(-2px,0);clip-path:inset(62% 0 8% 0);animation:glB 2.7s steps(2) infinite}
+@keyframes glA{0%,88%,100%{opacity:0}89%,96%{opacity:.8;transform:translate(4px,-2px)}}
+@keyframes glB{0%,84%,100%{opacity:0}85%,94%{opacity:.8;transform:translate(-4px,2px)}}
+
+/* le bouton rouge — SEUL élément rouge de tout le jeu */
+.btn-red-wrap{position:relative;display:flex;flex-direction:column;align-items:center}
+.btn-red{
+  --d:clamp(170px,32vmin,320px);
+  position:relative;width:var(--d);height:var(--d);
+  border-radius:50%;
+  border:none;
+  background:
+    radial-gradient(circle at 32% 26%,#ff8a8a 0%,#ff4444 16%,#e3122b 42%,#8f0a1c 78%,#5c0612 100%);
+  box-shadow:
+    0 0 0 clamp(8px,1.6vmin,16px) #0b0f16,
+    0 0 0 clamp(11px,2vmin,20px) #1c2733,
+    0 0 clamp(30px,6vmin,60px) rgba(255,30,60,.85),
+    0 clamp(14px,3vmin,30px) clamp(30px,6vmin,64px) rgba(0,0,0,.75),
+    inset 0 -14px 30px rgba(0,0,0,.55),
+    inset 0 10px 24px rgba(255,255,255,.22);
+  transition:transform .09s ease;
+  z-index:2;
+}
+/* halo pulsant DÉTACHÉ du bouton : animé en opacity/transform (composité GPU,
+   plus aucun repaint des box-shadow du bouton à chaque frame) */
+.btn-red::after{
+  content:"";position:absolute;inset:-14%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,30,60,.5) 0%,rgba(255,30,60,0) 68%);
+  animation:haloPulse 2.1s ease-in-out infinite;
+}
+@keyframes haloPulse{
+  0%,100%{opacity:.55;transform:scale(.94)}
+  50%{opacity:1;transform:scale(1.06)}
+}
+.btn-red::before{
+  content:"";position:absolute;left:14%;top:7%;width:52%;height:34%;
+  border-radius:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0));
+  filter:blur(3px);pointer-events:none;
+}
+.btn-red:active{transform:scale(.93)}
+.btn-red.pressed{transform:scale(.9);filter:brightness(1.5)}
+
+/* zone exactement à la taille du bouton : les anneaux y sont centrés dessus */
+.btn-red-zone{position:relative;display:flex;align-items:center;justify-content:center}
+.btn-ring{position:absolute;border-radius:50%;pointer-events:none;z-index:1}
+.ring-spin{
+  inset:-9%;
+  border:1px dashed rgba(0,200,255,.5);
+  animation:spin 14s linear infinite;
+}
+.ring-pulse{
+  inset:-5%;
+  border:2px solid rgba(0,200,255,.55);
+  animation:ringPulse 2.6s cubic-bezier(.2,.6,.4,1) infinite;
+}
+.ring-pulse.rp2{animation-delay:1.3s}
+@keyframes ringPulse{
+  0%{transform:scale(.82);opacity:.85;box-shadow:0 0 24px rgba(0,200,255,.35)}
+  100%{transform:scale(1.28);opacity:0}
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.btn-label-top{
+  margin-top:clamp(16px,3.5vh,34px);
+  font-family:var(--font-title);font-weight:700;
+  font-size:clamp(.85em,2.6vmin,1.5em);
+  color:var(--white);letter-spacing:.34em;text-indent:.34em;text-align:center;
+  text-shadow:0 0 14px rgba(255,255,255,.4);
+}
+.btn-label-bottom{
+  margin-top:clamp(6px,1.2vh,12px);
+  font-size:clamp(.6em,1.8vmin,.9em);
+  color:var(--blue);letter-spacing:.42em;text-indent:.42em;text-transform:uppercase;text-align:center;
+  animation:hudBlink 2.4s ease-in-out infinite;
+}
+.alert-footer{
+  position:absolute;bottom:clamp(8px,2vh,18px);
+  font-size:clamp(.52em,1.3vmin,.7em);letter-spacing:.3em;color:#3d6a85;text-transform:uppercase;
+}
+@media (max-height:560px){
+  .alert-header{margin-bottom:8px}
+  .btn-red{--d:clamp(130px,26vmin,220px)}
+  .btn-label-top{margin-top:8px}
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <header id="topbar">
+    <div class="hud-left">
+      <span class="cursor-block">AURORA&nbsp;//&nbsp;GRID&nbsp;DEF-7</span>
+      <span class="hud-blink" style="color:var(--white)">■&nbsp;VEILLE</span>
+    </div>
+    <div class="hud-left">
+      <span id="clock">--:--:--</span>
+      <span id="syshex">SYS:0F.A2</span>
+      <span><span class="rec-dot"></span>REC</span>
+    </div>
+  </header>
+
+  <main class="stage-viewport" id="viewport-alert">
+    <div class="grid3d"></div>
+    <div class="alert-header">
+      <div class="alert-title"><span class="glitch" data-text="AURORA">AURORA</span></div>
+      <div class="alert-sub">Intelligence de défense — réseau sécurisé</div>
+    </div>
+    <div class="btn-red-wrap">
+      <div class="btn-red-zone">
+        <div class="btn-ring ring-spin"></div>
+        <div class="btn-ring ring-pulse"></div>
+        <div class="btn-ring ring-pulse rp2"></div>
+        <button class="btn-red" id="big-red" aria-label="Bouton rouge d'urgence"></button>
+      </div>
+      <div class="btn-label-top">EN CAS DE DANGER</div>
+      <div class="btn-label-bottom">Appuyez sur le bouton rouge</div>
+    </div>
+    <div class="alert-footer">AURORA veille sur le secteur — tous droits réservés aux machines</div>
+  </main>
+
+  <footer id="botbar">
+    <div class="hud-left">
+      <span>RÉSEAU AURORA // ACCÈS RESTREINT</span>
+      <span id="stage-label">PHASE 01/05 — VEILLE</span>
+    </div>
+    <div class="hud-left">
+      <span>SECTEUR FECAMP — NUIT DU 14.10</span>
+      <span class="hud-blink">▮ SIGNAL CHIFFRÉ</span>
+    </div>
+  </footer>
+</div>
+
+<div id="flash"></div>
+<div id="static-overlay"></div>
+<div id="scanlines"></div>
+<div class="vignette"></div>
+
+<script src="assets/core.js?v=4"></script>
+<script>
+(function(){
+"use strict";
+AURORA.boot("alert");
+AURORA.sfxPreload(["bip","succes"]);
+
+document.getElementById("big-red").addEventListener("click", function(){
+  var b = this;
+  b.classList.add("pressed");
+  AURORA.sfx("succes", 0.5);
+  setTimeout(function(){
+    AURORA.goPage({ url:"video.html", stage:"video", fx:"blast" });
+  }, 420);
+});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+/* ════════════════════════════════════════════════════════════
+   AURORA // GRID — design system partagé
+   Thème : noir + bleu pétant + blanc. Rouge RÉSERVÉ au bouton
+   d'urgence et aux alertes critiques (cibles, refus).
+   ════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#01040a;
+  --ink:#eaf6ff;
+  --blue:#00c8ff;
+  --blue-dim:#0a3a52;
+  --blue-soft:#7fd4ff;
+  --red:#ff1e3c;          /* bouton d'urgence uniquement */
+  --white:#ffffff;
+  --font-title:'Orbitron','Segoe UI',sans-serif;
+  --font-mono:'Share Tech Mono','Consolas',monospace;
+}
+html{background:#01040a;color-scheme:dark}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-mono);
+  user-select:none;
+}
+button{font-family:inherit;cursor:pointer}
+
+/* ---------- barres HUD ---------- */
+#topbar,#botbar{
+  flex:0 0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;
+  padding:clamp(6px,1vh,12px) clamp(12px,2.5vw,28px);
+  font-size:clamp(.58em,1.35vmin,.78em);
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--blue-soft);
+  border-image:linear-gradient(90deg,transparent,rgba(0,200,255,.55),transparent) 1;
+  background:linear-gradient(180deg,rgba(0,200,255,.06),transparent);
+  z-index:5;
+}
+#topbar{border-bottom:1px solid rgba(0,200,255,.28)}
+#botbar{border-top:1px solid rgba(0,200,255,.28);color:#4d7f9e}
+.hud-left,.hud-right{display:flex;align-items:center;gap:14px;white-space:nowrap;overflow:hidden}
+.hud-blink{animation:hudBlink 1.1s steps(2) infinite}
+@keyframes hudBlink{50%{opacity:.15}}
+.rec-dot{display:inline-block;width:.65em;height:.65em;border-radius:50%;background:var(--blue);
+  box-shadow:0 0 8px var(--blue);margin-right:.5em;animation:hudBlink 1.4s steps(2) infinite;vertical-align:middle}
+#clock{color:var(--white);letter-spacing:.28em}
+#syshex{color:var(--blue)}
+.cursor-block::after{content:"▮";animation:hudBlink .9s steps(2) infinite;color:var(--blue)}
+
+/* ---------- conteneur pleine page ---------- */
+.stage{
+  height:100dvh;
+  display:flex;flex-direction:column;
+}
+.stage-viewport{
+  flex:1 1 auto;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:clamp(10px,2.5vmin,30px);
+  gap:clamp(8px,1.6vh,16px);
+}
+
+/* ---------- overlays ---------- */
+#flash{
+  position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:70;
+}
+#flash.go{animation:flashAnim .5s ease-out forwards}
+@keyframes flashAnim{0%{opacity:.95}100%{opacity:0}}
+#static-overlay{
+  position:fixed;inset:0;pointer-events:none;opacity:0;z-index:60;
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.85) 0 2px,transparent 2px 7px),
+    repeating-linear-gradient(90deg,rgba(0,200,255,.75) 0 3px,transparent 3px 9px);
+  mix-blend-mode:screen;
+}
+#static-overlay.go{animation:staticFlash .66s steps(9) forwards}
+@keyframes staticFlash{
+  0%{opacity:0}12%{opacity:.95;transform:translateY(-8px)}
+  30%{opacity:.55;transform:translateY(6px) scaleY(1.4)}
+  55%{opacity:.85;transform:translateY(-4px)}
+  80%{opacity:.3}100%{opacity:0}
+}
+#scanlines{
+  position:fixed;inset:0;pointer-events:none;z-index:80;
+  background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.055) 2px 4px);
+}
+#scanlines::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent,rgba(0,200,255,.03) 48%,rgba(0,0,0,.16));
+}
+.vignette{
+  position:fixed;inset:0;pointer-events:none;z-index:81;
+  background:radial-gradient(ellipse 105% 90% at 50% 46%,transparent 58%,rgba(0,0,0,.55) 100%);
+}
+body.glitch-burst .stage{animation:gBurst .13s steps(2) 1}
+@keyframes gBurst{
+  0%{transform:translate(3px,-2px) skewX(1.5deg)}
+  50%{transform:translate(-4px,2px) skewX(-1deg)}
+  100%{transform:none}
+}
+
+/* ---------- petits utilitaires ---------- */
+.skip-btn{
+  position:absolute;top:14px;right:16px;z-index:20;display:none;
+  background:rgba(0,200,255,.14);border:1px solid rgba(0,200,255,.6);color:var(--blue-soft);
+  padding:6px 14px;font-size:.62em;letter-spacing:.22em;text-transform:uppercase;
+}
+body.debug .skip-btn{display:block}
+.skip-btn:hover{background:rgba(0,200,255,.32)}
+
+/* accessibilité volontairement désactivée : les animations SONt le jeu
+   (balises sonar, pulsations) — elles restent actives même si l'OS
+   signale prefers-reduced-motion */
+
+/* ---------- mode compact : viewports bas ---------- */
+@media (max-height:560px){
+  #topbar,#botbar{padding:3px 14px;font-size:.56em}
+  .stage-viewport{gap:6px;padding:8px}
+}
+
+/* ---------- transitions de SORTIE de page ---------- */
+/* déclenchées par AURORA.goPage({fx:...}) avant location.href */
+body.page-exit-blast .stage{
+  animation:pExitBlast .45s cubic-bezier(.5,0,.9,.4) forwards;
+}
+@keyframes pExitBlast{to{transform:scale(2.6);opacity:0;filter:blur(16px) brightness(2.2)}}
+
+body.page-exit-static .stage{animation:pExitStatic .48s steps(6) forwards}
+@keyframes pExitStatic{
+  20%{transform:translateX(-14px) skewX(4deg);filter:contrast(2)}
+  40%{transform:translateX(10px);opacity:.85}
+  60%{transform:translateX(-6px) skewX(-3deg)}
+  80%{opacity:.4;filter:blur(3px)}
+  100%{opacity:0;filter:blur(8px)}
+}
+
+body.page-exit-iris .stage{animation:pExitIris .56s cubic-bezier(.7,0,.9,.5) forwards}
+@keyframes pExitIris{to{clip-path:circle(0% at 50% 50%);opacity:.3;filter:brightness(2)}}
+
+body.page-exit-implode .stage{
+  transform-origin:50% 46%;
+  animation:pImplode 1.55s cubic-bezier(.6,0,.9,.4) forwards;
+}
+@keyframes pImplode{
+  0%  {transform:scale(1) rotate(0deg);filter:blur(0) brightness(1)}
+  50% {transform:scale(.62) rotate(9deg);filter:blur(2px) brightness(1.7) contrast(1.3)}
+  78% {transform:scale(.18) rotate(38deg);filter:blur(5px) brightness(2.6)}
+  100%{transform:scale(.001) rotate(90deg);filter:blur(12px) brightness(5)}
+}
+
+/* entrée de page (après navigation) */
+body.page-enter .stage{animation:pEnter .4s ease-out}
+@keyframes pEnter{from{opacity:0;transform:scale(.988)}}
+
+/* ---------- modale maître du jeu (partagée) ---------- */
+#modal-mj{
+  position:fixed;inset:0;z-index:90;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(1,4,10,.82);backdrop-filter:blur(4px);
+}
+#modal-mj.show{display:flex}
+.mj-box{
+  width:min(92vw,430px);
+  border:1px solid var(--blue);
+  background:#020810;
+  box-shadow:0 0 60px rgba(0,200,255,.25);
+  padding:clamp(16px,3vmin,30px);
+  display:flex;flex-direction:column;gap:12px;
+}
+.mj-title{
+  font-family:var(--font-title);font-weight:700;font-size:clamp(.75em,2.2vmin,1em);
+  letter-spacing:.24em;color:var(--blue);text-transform:uppercase;
+}
+.mj-sub{font-size:clamp(.55em,1.5vmin,.7em);color:#4d7f9e;letter-spacing:.16em}
+#mj-input{
+  background:rgba(0,10,25,.9);color:var(--white);
+  border:1px solid rgba(0,200,255,.5);border-bottom:3px solid var(--blue);
+  padding:10px 14px;font-family:var(--font-mono);font-size:1em;letter-spacing:.24em;
+  outline:none;text-transform:uppercase;
+}
+.mj-row{display:flex;gap:10px;justify-content:flex-end}
+.mj-btn{
+  background:transparent;border:1px solid rgba(0,200,255,.5);color:var(--blue-soft);
+  padding:8px 18px;letter-spacing:.2em;font-size:.72em;text-transform:uppercase;
+}
+.mj-btn:hover{background:rgba(0,200,255,.15)}
+#mj-err{color:var(--white);font-size:.68em;letter-spacing:.24em;min-height:1.2em;text-transform:uppercase}

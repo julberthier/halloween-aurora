@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURORA // GRID</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%2300c8ff'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css?v=4">
+<style>
+body{display:flex;align-items:center;justify-content:center}
+.boot{
+  font-family:var(--font-mono);color:var(--blue);letter-spacing:.4em;
+  font-size:clamp(.7em,2.4vmin,1.1em);text-transform:uppercase;text-align:center;
+  animation:bootBlink 1.2s steps(2) infinite;
+}
+@keyframes bootBlink{50%{opacity:.3}}
+/* écran de reprise */
+#resume-overlay{
+  position:fixed;inset:0;z-index:95;display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background:rgba(1,4,10,.94);
+}
+#resume-overlay.show{display:flex}
+.resume-txt{font-size:clamp(.65em,2vmin,.95em);letter-spacing:.32em;color:var(--blue);text-transform:uppercase;text-align:center;padding:0 20px}
+.resume-row{display:flex;gap:14px}
+.resume-btn{
+  background:transparent;border:1px solid var(--blue);color:var(--ink);
+  padding:10px 26px;font-family:var(--font-mono);letter-spacing:.26em;font-size:.8em;
+}
+.resume-btn:hover{background:rgba(0,200,255,.18)}
+</style>
+</head>
+<body>
+<div class="boot" id="boot-txt">INITIALISATION AURORA…</div>
+
+<div id="resume-overlay">
+  <div class="resume-txt" id="resume-txt">Session terminal détectée — reprendre la phase en cours ?</div>
+  <div class="resume-row">
+    <button class="resume-btn" id="resume-yes">Reprendre</button>
+    <button class="resume-btn" id="resume-no">Réinitialiser</button>
+  </div>
+</div>
+
+<div id="scanlines"></div>
+<div class="vignette"></div>
+
+<script src="assets/core.js?v=4"></script>
+<script>
+(function(){
+"use strict";
+/* routeur : renvoie vers la phase mémorisée, sinon phase 01 */
+var PAGES = { alert:"alert.html", video:"video.html", map:"map.html", code:"code.html", finale:"finale.html" };
+var query = location.search;
+var debug = /[?&]debug=1/.test(query);
+function go(p){ location.replace(PAGES[p] + (debug ? "?debug=1" : "")); }
+
+var saved = AURORA.getStage();
+var reset = /[?&]reset=1/.test(query);
+if (reset){ AURORA.clearStage(); saved = null; }
+
+if (saved && saved !== "alert" && PAGES[saved]){
+  /* proposer la reprise */
+  var ov = document.getElementById("resume-overlay");
+  var txt = document.getElementById("resume-txt");
+  var labels = AURORA.STAGE_LABELS;
+  var t = 6, tv;
+  function upd(){ txt.textContent = "Session détectée (" + (labels[saved] || saved) + ") — reprendre ? " + t; }
+  ov.classList.add("show");
+  upd();
+  tv = setInterval(function(){ t--; if (t <= 0){ done(false); } else { upd(); } }, 1000);
+  function done(resume){
+    clearInterval(tv);
+    if (resume){ go(saved); }
+    else { AURORA.clearStage(); go("alert"); }
+  }
+  document.getElementById("resume-yes").onclick = function(){ done(true); };
+  document.getElementById("resume-no").onclick = function(){ done(false); };
+} else {
+  setTimeout(function(){ go("alert"); }, 350);
+}
+})();
+</script>
+</body>
+</html>

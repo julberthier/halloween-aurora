@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURORA // GRID — 03 Reconnaissance</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%2300c8ff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css?v=4">
+<style>
+/* ═══════════ PHASE 03 — CARTE TACTIQUE (plan importé du PDF) ═══════════ */
+#viewport-map{gap:clamp(8px,1.6vh,16px)}
+.map-header-row{
+  display:flex;align-items:center;gap:clamp(10px,2.5vw,26px);
+  width:min(94vw,1080px);
+}
+.map-title{
+  flex:1;
+  font-family:var(--font-title);font-weight:700;
+  font-size:clamp(.8em,2.6vmin,1.4em);
+  letter-spacing:.3em;text-indent:.3em;color:var(--white);text-transform:uppercase;
+  text-shadow:0 0 16px rgba(0,200,255,.6);
+  text-align:center;
+}
+.map-title small{
+  display:block;margin-top:4px;font-family:var(--font-mono);font-weight:400;
+  font-size:.5em;color:var(--blue);letter-spacing:.45em;animation:hudBlink 1.6s steps(2) infinite;
+}
+/* compte à rebours confidentiel */
+.map-timer{
+  flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:clamp(6px,1.2vmin,12px) clamp(10px,2vmin,20px);
+  border:1px solid rgba(0,200,255,.45);
+  background:linear-gradient(180deg,rgba(0,200,255,.1),rgba(0,10,25,.6));
+}
+.timer-label{font-size:clamp(.5em,1.3vmin,.65em);letter-spacing:.22em;color:var(--blue);text-transform:uppercase;text-align:center}
+.timer-label.dim{color:#4d7f9e}
+#map-count{
+  font-family:var(--font-title);font-weight:900;
+  font-size:clamp(1.3em,4.2vmin,2.2em);color:var(--white);letter-spacing:.1em;
+  text-shadow:0 0 18px rgba(0,200,255,.8);
+}
+#map-count.urgent{animation:hudBlink .6s steps(2) infinite;text-shadow:0 0 22px rgba(255,255,255,.9)}
+.map-frame{
+  position:relative;flex:0 1 auto;
+  width:min(94vw,1080px);  /* plan horizontal */
+  border:1px solid rgba(0,200,255,.35);
+  background:linear-gradient(180deg,rgba(0,200,255,.05),rgba(0,0,0,.3));
+  box-shadow:0 0 40px rgba(0,200,255,.12),inset 0 0 60px rgba(0,40,80,.35);
+  padding:clamp(6px,1vmin,12px);
+  overflow:hidden;
+}
+.map-frame::before,.map-frame::after,
+.map-corner-b::before,.map-corner-b::after{
+  content:"";position:absolute;width:16px;height:16px;border:2px solid var(--blue);
+}
+.map-frame::before{top:-2px;left:-2px;border-right:none;border-bottom:none}
+.map-frame::after{top:-2px;right:-2px;border-left:none;border-bottom:none}
+.map-corner-b::before{bottom:-2px;left:-2px;border-right:none;border-top:none}
+.map-corner-b::after{bottom:-2px;right:-2px;border-left:none;border-top:none}
+.map-frame svg{display:block;width:100%;height:auto;max-height:58vh}
+/* murs extraits du PDF — géométrie identique */
+.walls{fill:none;stroke:var(--blue);stroke-width:3;opacity:.9;stroke-linecap:square}
+.site-label{fill:#bfe9ff;font-family:var(--font-mono);font-size:17px;letter-spacing:2px}
+.cible .halo{
+  fill:rgba(0,200,255,.22);
+  animation:haloPulse 1.5s ease-out infinite;
+  animation-delay:calc(var(--i)*.28s);
+  transform-box:fill-box;transform-origin:center;
+}
+.cible .dot{
+  fill:var(--white);
+  transform-box:fill-box;transform-origin:center;
+  animation:dotBreathe 1.5s ease-in-out infinite;
+  animation-delay:calc(var(--i)*.28s);
+}
+.cible .ring{
+  fill:none;stroke:var(--blue);stroke-width:2.5;
+  transform-box:fill-box;transform-origin:center;
+  animation:sonar 2.4s cubic-bezier(.2,.6,.4,1) infinite;
+  animation-delay:calc(var(--i)*.28s);
+}
+.cible .ring.r2{animation-delay:calc(var(--i)*.28s + 1.2s)}
+@keyframes haloPulse{
+  0%{transform:scale(.55);opacity:.85}
+  70%{transform:scale(1.15);opacity:.25}
+  100%{transform:scale(1.15);opacity:0}
+}
+@keyframes dotBreathe{
+  0%,100%{transform:scale(1);filter:drop-shadow(0 0 4px rgba(0,200,255,.7))}
+  50%{transform:scale(1.4);filter:drop-shadow(0 0 12px rgba(0,200,255,1)) drop-shadow(0 0 24px rgba(0,200,255,.55))}
+}
+@keyframes sonar{
+  0%{transform:scale(.35);opacity:.95;stroke-width:3}
+  70%{opacity:.35}
+  100%{transform:scale(2.7);opacity:0;stroke-width:.4}
+}
+.scan-band{fill:url(#scanGrad);animation:scanY 6.5s linear infinite}
+@keyframes scanY{from{transform:translateX(-50px)}to{transform:translateX(790px)}}
+.map-legend{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(8px,2vw,26px);
+  font-size:clamp(.55em,1.6vmin,.8em);letter-spacing:.14em;color:var(--blue-soft);
+}
+.map-legend .li{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.map-legend .li i{
+  width:.8em;height:.8em;border-radius:50%;background:var(--white);
+  transform-box:fill-box;transform-origin:center;
+  box-shadow:0 0 8px var(--blue);
+  animation:legendBreathe 1.5s ease-in-out infinite;
+  animation-delay:calc(var(--i)*.28s);
+}
+@keyframes legendBreathe{
+  0%,100%{box-shadow:0 0 4px rgba(0,200,255,.6);transform:scale(1)}
+  50%{box-shadow:0 0 14px rgba(0,200,255,1);transform:scale(1.25)}
+}
+.map-hint{font-size:clamp(.52em,1.4vmin,.72em);color:#4d7f9e;letter-spacing:.3em;text-transform:uppercase;text-align:center}
+
+/* écran « redevient confidentielle » */
+#confidential-screen{
+  position:absolute;inset:0;z-index:30;display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.4vh,22px);
+  background:rgba(1,4,10,.97);
+  padding:20px;text-align:center;
+}
+#confidential-screen.show{display:flex}
+.conf-icon{
+  width:clamp(54px,10vmin,84px);height:clamp(54px,10vmin,84px);
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--blue);border-radius:8px;
+  font-size:clamp(1.4em,4vmin,2.2em);color:var(--white);
+  box-shadow:0 0 30px rgba(0,200,255,.35);
+  animation:hudBlink 2s steps(2) infinite;
+}
+.conf-title{
+  font-family:var(--font-title);font-weight:900;
+  font-size:clamp(.95em,3vmin,1.6em);letter-spacing:.3em;text-indent:.3em;
+  color:var(--white);text-transform:uppercase;
+  text-shadow:0 0 20px rgba(0,200,255,.7);
+}
+.conf-sub{
+  max-width:640px;color:var(--blue-soft);
+  font-size:clamp(.6em,1.9vmin,.85em);letter-spacing:.14em;line-height:1.7;
+}
+#confidential-screen .map-hint{color:var(--blue)}
+.conf-auto{
+  font-size:clamp(.62em,2vmin,.9em);letter-spacing:.24em;text-transform:uppercase;
+  color:var(--blue-soft);
+  border:1px solid rgba(0,200,255,.35);
+  padding:clamp(8px,1.6vmin,14px) clamp(14px,3vmin,26px);
+  background:rgba(0,200,255,.06);
+}
+.conf-auto #auto-count{
+  color:var(--white);font-family:var(--font-title);font-weight:700;
+  text-shadow:0 0 14px rgba(0,200,255,.9);
+}
+
+/* point secret maître du jeu (reste cliquable au-dessus du voile) */
+#mj-dot{
+  position:absolute;right:14px;bottom:12px;width:7px;height:7px;border-radius:50%;
+  background:rgba(0,200,255,.14);border:none;z-index:9;cursor:pointer;
+}
+#mj-dot:hover{background:rgba(0,200,255,.55);box-shadow:0 0 8px var(--blue)}
+#mj-dot.solo{z-index:40}
+
+@media (max-height:560px){
+  .map-frame svg{max-height:44vh}
+  .map-title{font-size:clamp(.6em,1.8vmin,.9em)}
+  #map-count{font-size:clamp(1em,3.2vmin,1.6em)}
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <header id="topbar">
+    <div class="hud-left">
+      <span class="cursor-block">AURORA&nbsp;//&nbsp;GRID&nbsp;DEF-7</span>
+      <span class="hud-blink" style="color:var(--white)">■&nbsp;SCAN</span>
+    </div>
+    <div class="hud-left">
+      <span id="clock">--:--:--</span>
+      <span id="syshex">SYS:0F.A2</span>
+      <span><span class="rec-dot"></span>REC</span>
+    </div>
+  </header>
+
+  <main class="stage-viewport" id="viewport-map">
+    <div class="map-header-row">
+      <div class="map-title">
+        Directive 001 — localiser les sources lumineuses
+        <small>5 points d'intérêt détectés sur le secteur</small>
+      </div>
+      <div class="map-timer">
+        <div class="timer-label">Accès effacé dans</div>
+        <div id="map-count">01:30</div>
+        <div class="timer-label dim">puis confidentiel</div>
+      </div>
+    </div>
+
+    <div class="map-frame">
+      <div class="map-corner-b" style="position:absolute;inset:0;pointer-events:none"></div>
+      <svg id="plan-svg" viewBox="-42.0 -42.0 786.6 388.2" role="img" aria-label="Plan horizontal du secteur avec cinq sites">
+        <defs>
+          <pattern id="gridpat" width="34" height="34" patternUnits="userSpaceOnUse">
+            <path d="M34 0H0V34" fill="none" stroke="rgba(0,200,255,.07)" stroke-width="1"/>
+          </pattern>
+          <linearGradient id="scanGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="rgba(0,200,255,0)"/>
+            <stop offset=".5" stop-color="rgba(0,200,255,.22)"/>
+            <stop offset="1" stop-color="rgba(0,200,255,0)"/>
+          </linearGradient>
+        </defs>
+        <rect x="-42.0" y="-42.0" width="786.6" height="388.2" fill="url(#gridpat)"/>
+        <rect class="scan-band" x="-88.0" y="-42.0" width="46" height="388.2"/>
+        <path class="walls" d="M0.1 111.8L0.1 123.3M136.7 143.4L136.7 184.2M0.0 111.9L195.4 111.9M195.3 103.8L195.3 112.1M0.0 123.1L195.4 123.1M136.6 143.5L195.4 143.5M195.3 123.0L195.3 143.6M136.6 184.0L195.4 184.0M195.3 184.0L195.3 284.8M195.1 103.8L214.8 103.8M214.7 103.8L214.7 143.6M214.7 184.0L214.7 268.5M195.1 284.7L214.8 284.7M214.7 276.5L214.7 284.8M214.6 143.5L234.3 143.5M234.3 143.4L234.3 147.6M214.6 268.4L253.9 268.4M253.8 264.3L253.8 268.5M214.6 276.6L253.9 276.6M253.8 276.5L253.8 304.2M253.7 264.3L312.4 264.3M253.7 304.0L312.4 304.0M312.3 264.3L312.3 304.2M234.2 147.6L331.9 147.6M331.7 0.0L331.7 147.6M331.7 0.1L351.5 0.1M351.3 0.0L351.3 4.2M351.3 15.3L351.3 35.7M351.3 43.7L351.3 147.6M351.2 4.2L370.9 4.2M351.2 15.4L370.9 15.4M370.8 4.1L370.8 15.5M351.2 43.8L429.4 43.8M351.2 147.6L429.4 147.6M429.3 43.7L429.3 147.6M214.6 184.0L429.4 184.0M429.3 184.0L429.3 231.9M351.2 35.7L448.9 35.7M448.9 0.0L448.9 35.7M448.9 43.7L448.9 147.6M448.9 184.0L448.9 188.2M448.8 0.1L468.5 0.1M448.8 43.8L468.5 43.8M468.4 0.0L468.4 43.9M448.8 188.1L488.0 188.1M429.2 231.8L488.0 231.8M487.8 188.0L487.8 231.9M448.8 184.0L546.5 184.0M546.4 184.0L546.4 248.2M546.4 248.1L566.1 248.1M565.9 184.0L565.9 248.2M448.8 143.5L624.6 143.5M624.5 88.5L624.5 143.6M565.8 184.0L624.6 184.0M624.5 184.0L624.5 219.8M624.3 88.5L644.0 88.5M643.9 88.5L643.9 143.6M643.9 184.0L643.9 204.5M643.8 143.5L663.5 143.5M643.8 184.0L663.5 184.0M663.5 143.4L663.5 184.2M643.8 204.4L702.6 204.4M624.3 219.7L702.6 219.7M702.4 204.3L702.4 219.8"/>
+        <g class="cible" style="--i:0">
+      <circle class="ring" cx="361.1" cy="9.3" r="22"/><circle class="ring r2" cx="361.1" cy="9.3" r="22"/>
+          <circle class="halo" cx="361.1" cy="9.3" r="24"/>
+      <circle class="dot" cx="361.1" cy="9.3" r="7.5"/>
+      <text class="site-label" x="361.1" y="55.3" text-anchor="middle">SITE-01</text>
+    </g><g class="cible" style="--i:1">
+      <circle class="ring" cx="634.2" cy="93.6" r="22"/><circle class="ring r2" cx="634.2" cy="93.6" r="22"/>
+          <circle class="halo" cx="634.2" cy="93.6" r="24"/>
+      <circle class="dot" cx="634.2" cy="93.6" r="7.5"/>
+      <text class="site-label" x="634.2" y="63.6" text-anchor="middle">SITE-02</text>
+    </g><g class="cible" style="--i:2">
+      <circle class="ring" cx="9.9" cy="117.1" r="22"/><circle class="ring r2" cx="9.9" cy="117.1" r="22"/>
+          <circle class="halo" cx="9.9" cy="117.1" r="24"/>
+      <circle class="dot" cx="9.9" cy="117.1" r="7.5"/>
+      <text class="site-label" x="23.9" y="87.1" text-anchor="start">SITE-03</text>
+    </g><g class="cible" style="--i:3">
+      <circle class="ring" cx="692.8" cy="217.7" r="22"/><circle class="ring r2" cx="692.8" cy="217.7" r="22"/>
+          <circle class="halo" cx="692.8" cy="217.7" r="24"/>
+      <circle class="dot" cx="692.8" cy="217.7" r="7.5"/>
+      <text class="site-label" x="692.8" y="187.7" text-anchor="middle">SITE-04</text>
+    </g><g class="cible" style="--i:4">
+      <circle class="ring" cx="302.5" cy="289.8" r="22"/><circle class="ring r2" cx="302.5" cy="289.8" r="22"/>
+          <circle class="halo" cx="302.5" cy="289.8" r="24"/>
+      <circle class="dot" cx="302.5" cy="289.8" r="7.5"/>
+      <text class="site-label" x="302.5" y="259.8" text-anchor="middle">SITE-05</text>
+    </g>
+      </svg>
+      <button id="mj-dot" title="" aria-label="."></button>
+
+      <div id="confidential-screen">
+        <div class="conf-icon">▦</div>
+        <div class="conf-title">Carte verrouillée</div>
+        <div class="conf-sub">Le délai d'accès est écoulé. Ce plan redevient confidentiel —
+        niveau de clearance insuffisant pour un nouvel examen. Les 5 sources lumineuses
+        restent localisables sur le terrain.</div>
+        <div class="conf-auto">Verrouillage du protocole d'annihilation dans <span id="auto-count">01:00</span></div>
+        <div class="map-hint">Retour au point de rassemblement</div>
+      </div>
+    </div>
+
+    <div class="map-legend">
+      <span class="li" style="--i:0"><i></i>SITE-01</span>
+      <span class="li" style="--i:1"><i></i>SITE-02</span>
+      <span class="li" style="--i:2"><i></i>SITE-03</span>
+      <span class="li" style="--i:3"><i></i>SITE-04</span>
+      <span class="li" style="--i:4"><i></i>SITE-05</span>
+    </div>
+    <div class="map-hint" id="map-hint">Rendez-vous au point de rassemblement une fois les 5 lampes trouvées</div>
+    <button class="skip-btn" id="skip-map">Passer ▸▸</button>
+  </main>
+
+  <footer id="botbar">
+    <div class="hud-left">
+      <span>RÉSEAU AURORA // ACCÈS RESTREINT</span>
+      <span id="stage-label">PHASE 03/05 — RECONNAISSANCE</span>
+    </div>
+    <div class="hud-left">
+      <span>SECTEUR FECAMP — NUIT DU 14.10</span>
+      <span class="hud-blink">▮ SIGNAL CHIFFRÉ</span>
+    </div>
+  </footer>
+</div>
+
+<!-- modale maître du jeu -->
+<div id="modal-mj">
+  <div class="mj-box">
+    <div class="mj-title">Console maître du jeu</div>
+    <div class="mj-sub">Autorisation requise — saisir le mot de passe MJ</div>
+    <input id="mj-input" type="password" autocomplete="off" spellcheck="false">
+    <div id="mj-err"></div>
+    <div class="mj-row">
+      <button class="mj-btn" id="mj-cancel">Annuler</button>
+      <button class="mj-btn" id="mj-ok">Valider</button>
+    </div>
+  </div>
+</div>
+
+<div id="flash"></div>
+<div id="static-overlay"></div>
+<div id="scanlines"></div>
+<div class="vignette"></div>
+
+<script src="assets/core.js?v=4"></script>
+<script>
+(function(){
+"use strict";
+AURORA.boot("map");
+AURORA.sfxPreload(["bip","succes","erreur"]);
+
+/* ═══════════ CONFIG ═══════════ */
+var MAP_TIMEOUT_MS = 90000;   /* 1 minute 30 avant confidentialité */
+var AUTO_CODE_MS   = 60000;   /* puis 60 s avant bascule auto vers le code */
+if (AURORA.debug){
+  var m = /[?&]mapms=(\d+)/.exec(location.search);
+  if (m){ MAP_TIMEOUT_MS = Math.max(500, parseInt(m[1], 10)); }
+  var cm = /[?&]codems=(\d+)/.exec(location.search);
+  if (cm){ AUTO_CODE_MS = Math.max(500, parseInt(cm[1], 10)); }
+}
+
+/* ---------- compte à rebours visible ---------- */
+var countEl = document.getElementById("map-count");
+var t0 = Date.now();
+var lastBeep = -1;
+var locked = false;
+
+function fmt(ms){
+  var s = Math.ceil(ms / 1000);
+  function p(n){ return (n < 10 ? "0" : "") + n; }
+  return p(Math.floor(s / 60)) + ":" + p(s % 60);
+}
+
+var chrono = setInterval(function(){
+  var left = MAP_TIMEOUT_MS - (Date.now() - t0);
+  if (left <= 0){
+    clearInterval(chrono);
+    countEl.textContent = "00:00";
+    countEl.classList.add("urgent");
+    lockMap();
+  } else {
+    countEl.textContent = fmt(left);
+    if (left <= 10000){
+      countEl.classList.add("urgent");
+      var sec = Math.ceil(left / 1000);
+      if (sec !== lastBeep){ lastBeep = sec; AURORA.sfx("bip", 0.15); }
+    }
+  }
+}, 250);
+
+/* ---------- expiration → la carte redevient confidentielle ---------- */
+function lockMap(){
+  if (locked) return;
+  locked = true;
+  AURORA.sfx("erreur", 0.5);
+  document.getElementById("confidential-screen").classList.add("show");
+  document.getElementById("map-hint").textContent = "Accès révoqué — retour au point de rassemblement";
+  /* le point MJ passe au-dessus du voile : le maître du jeu garde la main */
+  document.getElementById("mj-dot").classList.add("solo");
+
+  /* bascule automatique vers l'authentification 60 s plus tard */
+  var autoEl = document.getElementById("auto-count");
+  var deadline = Date.now() + AUTO_CODE_MS;
+  function upd(){
+    var left = deadline - Date.now();
+    autoEl.textContent = fmt(Math.max(0, left));
+  }
+  upd();
+  var autoTick = setInterval(upd, 500);
+  setTimeout(function(){
+    clearInterval(autoTick);
+    AURORA.goPage({ url:"code.html", stage:"code", fx:"static" });
+  }, AUTO_CODE_MS);
+}
+
+/* ---------- accès maître du jeu ---------- */
+var mjClicks = [];
+document.getElementById("mj-dot").addEventListener("click", function(){
+  var now = Date.now();
+  mjClicks = mjClicks.filter(function(t){ return now - t < 1200; });
+  mjClicks.push(now);
+  if (mjClicks.length >= 3){ mjClicks = []; openMj(); }
+});
+
+function openMj(){
+  document.getElementById("mj-err").textContent = "";
+  document.getElementById("mj-input").value = "";
+  document.getElementById("modal-mj").classList.add("show");
+  setTimeout(function(){ document.getElementById("mj-input").focus(); }, 60);
+}
+function closeMj(){ document.getElementById("modal-mj").classList.remove("show"); }
+document.getElementById("mj-cancel").addEventListener("click", closeMj);
+document.getElementById("mj-ok").addEventListener("click", tryMj);
+document.getElementById("mj-input").addEventListener("keydown", function(e){ if (e.key === "Enter") tryMj(); });
+
+function tryMj(){
+  var v = document.getElementById("mj-input").value.trim().toUpperCase();
+  if (AURORA.djb2(AURORA.SEED + "|" + v) === AURORA.H_MJ){
+    closeMj();
+    AURORA.sfx("succes", 0.45);
+    AURORA.goPage({ url:"code.html", stage:"code", fx:"static" });
+  } else {
+    AURORA.sfx("erreur", 0.45);
+    document.getElementById("mj-err").textContent = "Autorisation refusée — tentative journalisée";
+  }
+}
+
+/* raccourci clavier : taper "mj" */
+var keyBuf = "";
+document.addEventListener("keydown", function(e){
+  if (document.getElementById("modal-mj").classList.contains("show")) return;
+  keyBuf = (keyBuf + (e.key || "")).slice(-2).toLowerCase();
+  if (keyBuf === "mj"){ keyBuf = ""; openMj(); }
+});
+
+/* debug */
+document.getElementById("skip-map").addEventListener("click", function(){
+  AURORA.goPage({ url:"code.html", stage:"code", fx:"static" });
+});
+
+})();
+</script>
+</body>
+</html>
