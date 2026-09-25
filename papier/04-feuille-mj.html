@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>AURORA — Feuille maître du jeu (NE PAS DIFFUSER)</title>
+<style>
+@page{size:A4;margin:0}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#01040a;--ink:#eaf6ff;--blue:#00c8ff;--soft:#7fd4ff;--dim:#3d6a85;--white:#fff;--red:#ff1e3c}
+body{background:#0a0a0a;font-family:'Segoe UI',Arial,sans-serif;display:flex;flex-direction:column;align-items:center;gap:24px;padding:24px 0}
+.sheet{width:210mm;height:297mm;background:var(--bg);position:relative;overflow:hidden;page-break-after:always;box-shadow:0 0 30px rgba(0,200,255,.15)}
+.inner{position:absolute;inset:7mm 8mm;border:2px solid var(--red);padding:9mm 11mm;display:flex;flex-direction:column}
+.corner{position:absolute;width:20px;height:20px;border:2px solid var(--red)}
+.c1{top:-2px;left:-2px;border-right:none;border-bottom:none}
+.c2{top:-2px;right:-2px;border-left:none;border-bottom:none}
+.c3{bottom:-2px;left:-2px;border-right:none;border-top:none}
+.c4{bottom:-2px;right:-2px;border-left:none;border-top:none}
+header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid rgba(255,30,60,.4);padding-bottom:5mm;margin-bottom:6mm}
+.h-title{font-weight:900;font-size:19pt;letter-spacing:4px;color:var(--white)}
+.h-title span{color:var(--red)}
+.h-sub{font-size:8pt;letter-spacing:3px;color:var(--red);text-transform:uppercase;margin-top:2.5mm;animation:none}
+.h-ref{font-family:Consolas,monospace;font-size:7pt;color:var(--dim);text-align:right;line-height:1.8}
+h2{font-size:10.5pt;letter-spacing:3px;color:var(--blue);text-transform:uppercase;margin:3.5mm 0 2mm;display:flex;align-items:center;gap:3mm}
+h2::before{content:"▸";color:var(--red)}
+p{font-size:9pt;line-height:1.6;color:var(--ink);margin-bottom:2.5mm}
+p b,li b{color:var(--white)}
+table{width:100%;border-collapse:collapse;margin:2mm 0}
+td,th{border:1px solid rgba(0,200,255,.3);padding:1.5mm 2.6mm;font-size:8.4pt;color:var(--ink);text-align:left;vertical-align:top}
+th{color:var(--soft);font-size:7.5pt;letter-spacing:2px;text-transform:uppercase;background:rgba(0,200,255,.08)}
+td b{color:var(--white)}
+.code{font-family:Consolas,monospace;font-size:26pt;font-weight:700;color:var(--white);letter-spacing:8px;text-align:center;
+  border:1px solid rgba(255,30,60,.6);background:rgba(255,30,60,.06);padding:4.5mm;margin:3mm 0;text-shadow:0 0 18px rgba(0,200,255,.6)}
+.mot{font-family:Consolas,monospace;font-size:19pt;font-weight:700;color:var(--white);letter-spacing:10px;text-align:center;
+  border:1px solid rgba(0,200,255,.5);background:rgba(0,200,255,.08);padding:4mm;margin:3mm 0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:1.5mm 6mm;margin:2mm 0;font-size:9.5pt}
+.kv div:nth-child(odd){color:var(--soft);text-transform:uppercase;font-size:7.5pt;letter-spacing:2px;padding-top:1.2mm}
+.kv div:nth-child(even){color:var(--ink)}
+.kv b{color:var(--white)}
+footer{margin-top:auto;display:flex;justify-content:space-between;font-family:Consolas,monospace;font-size:6.5pt;color:var(--dim);letter-spacing:2px;border-top:1px solid rgba(255,30,60,.35);padding-top:3mm;text-transform:uppercase}
+@media print{body{background:none;padding:0;gap:0}.sheet{box-shadow:none}}
+</style>
+</head>
+<body>
+
+<div class="sheet"><div class="inner">
+  <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
+  <header>
+    <div>
+      <div class="h-title">MAÎTRE DU JEU <span>// AURORA</span></div>
+      <div class="h-sub">⚠ document confidentiel — ne jamais diffuser aux joueurs</div>
+    </div>
+    <div class="h-ref">RÉF. MJ-AURORA-31<br>EXEMPLAIRE UNIQUE</div>
+  </header>
+
+  <h2>Solutions</h2>
+  <div class="code">094453677812990</div>
+  <div class="mot">SURPRISE</div>
+  <table>
+    <tr><th>Élément</th><th>Solution</th><th>Où le trouveront-ils</th></tr>
+    <tr><td>Groupe 1 (5 chiffres)</td><td><b>0 9 4</b> + 4,5 verrouillés</td><td>fragment papier SITE-01</td></tr>
+    <tr><td>Groupe 2 (5 chiffres)</td><td><b>3 6 7</b> + 7,8 verrouillés</td><td>fragment papier SITE-02</td></tr>
+    <tr><td>Groupe 3 (5 chiffres)</td><td><b>1 2</b> + 9 verrouillé + <b>9 0</b></td><td>fragments papier SITE-03 et SITE-04</td></tr>
+    <tr><td>Question secrète</td><td><b>SURPRISE</b></td><td>5 pièces rébus — SITE-05 et registre</td></tr>
+  </table>
+
+  <h2>Rébus — pièces et réponses</h2>
+  <table>
+    <tr><th>Pièce</th><th>Énigme</th><th>Réponse</th></tr>
+    <tr><td>1</td><td>surf sans le F</td><td><b>SUR</b></td></tr>
+    <tr><td>2</td><td>panneau de stationnement</td><td><b>P</b></td></tr>
+    <tr><td>3</td><td>rire sans son RE final</td><td><b>RI</b></td></tr>
+    <tr><td>4</td><td>le serpent siffle…</td><td><b>S</b></td></tr>
+    <tr><td>5</td><td>EAU sans l'AU</td><td><b>E</b></td></tr>
+  </table>
+
+  <h2>Déroulé &amp; timings de la soirée</h2>
+  <div class="kv">
+    <div>00:00</div><div>accueil, <b>bouton rouge</b> (alert.html) → vidéo AURORA 36 s → carte</div>
+    <div>carte</div><div><b>90 s</b> visibles → verrouillage → 60 s → bascule auto sur le code. Expédition : 5 sites (lampes + papiers)</div>
+    <div>retour</div><div><b>triple-clic point bleu</b> (bas-droite carte) ou taper « m j » → <b>MJ-AURORA-31</b> → écran code</div>
+    <div>fin</div><div>code + SURPRISE → implosion → finale (~45 s, cassette, AURORA)</div>
+  </div>
+
+  <h2>Sauvetages rapides</h2>
+  <table>
+    <tr><th>Panne</th><th>Solution</th></tr>
+    <tr><td>Page bloquée / phase perdue</td><td>URL directe : <b>/alert.html</b> · <b>/map.html</b> · <b>/code.html</b> · <b>/finale.html</b> — ou <b>/index.html?reset=1</b> pour repartir de zéro</td></tr>
+    <tr><td>Répéter rapidement</td><td>ajouter <b>?debug=1</b> (boutons « Passer », chronos accélérés)</td></tr>
+    <tr><td>Carte verrouillée trop tôt</td><td>triple-clic point bleu → MJ → code (fonctionne même verrouillé)</td></tr>
+    <tr><td>Le son de la vidéo ne part pas</td><td>écran « Lancer la transmission » → un clic n'importe où</td></tr>
+    <tr><td>Finale sans son</td><td>un clic n'importe où relance le message</td></tr>
+  </table>
+
+  <footer><span>AURORA // feuille maître du jeu — 14.10 — secteur FECAMP</span><span>si un élève lit ceci, vous avez échoué en tant qu'humain</span></footer>
+</div></div>
+
+</body>
+</html>
