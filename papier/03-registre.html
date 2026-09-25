@@ -5,221 +5,309 @@
 <title>Registre des conduites à suivre en cas de danger imminent</title>
 <style>
 @page{size:A4;margin:0}
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--blue:#0a6a94;--soft:#4d7f9e;--dim:#7a8a95;--ink:#1a2430;--line:#0a6a94}
-body{background:#ddd;font-family:'Segoe UI',Arial,sans-serif;display:flex;flex-direction:column;align-items:center;gap:24px;padding:24px 0}
-.sheet{width:210mm;height:297mm;background:#fff;position:relative;overflow:hidden;page-break-after:always;box-shadow:0 2px 12px rgba(0,0,0,.25)}
-.inner{position:absolute;inset:11mm;border:1.5px solid var(--line);padding:11mm 13mm;display:flex;flex-direction:column}
-.corner{position:absolute;width:18px;height:18px;border:2.5px solid var(--blue)}
-.c1{top:-2px;left:-2px;border-right:none;border-bottom:none}
-.c2{top:-2px;right:-2px;border-left:none;border-bottom:none}
-.c3{bottom:-2px;left:-2px;border-right:none;border-top:none}
-.c4{bottom:-2px;right:-2px;border-left:none;border-top:none}
-header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid var(--line);padding-bottom:4mm;margin-bottom:6mm}
-.h-title{font-weight:900;font-size:13pt;letter-spacing:3px;color:var(--ink)}
-.h-sub{font-size:7.5pt;letter-spacing:2.5px;color:var(--soft);text-transform:uppercase;margin-top:1.5mm}
-.h-ref{font-family:Consolas,monospace;font-size:7pt;color:var(--dim);text-align:right;line-height:1.7}
-h2{font-size:11.5pt;letter-spacing:2px;color:var(--blue);text-transform:uppercase;margin:4.5mm 0 2.5mm}
-h2::before{content:"▸ "}
-p{font-size:9.5pt;line-height:1.65;color:var(--ink);margin-bottom:2.5mm;text-align:justify}
-p b,li b{color:#000}
-.note{font-family:Consolas,monospace;font-size:7.5pt;color:var(--dim);margin:1.5mm 0}
-ol{list-style:none;counter-reset:item;margin:1.5mm 0}
-ol li{counter-increment:item;display:flex;gap:3.5mm;margin-bottom:2.8mm;font-size:9.5pt;line-height:1.55;color:var(--ink)}
-ol li::before{content:counter(item,decimal-leading-zero);font-family:Consolas,monospace;color:var(--blue);font-weight:700;min-width:7mm}
-.box{border:1px solid var(--line);padding:3.5mm 5mm;margin:2.5mm 0}
-.box-t{font-size:7.5pt;letter-spacing:2.5px;color:var(--blue);text-transform:uppercase;margin-bottom:1.5mm;font-weight:700}
-.box p{margin:0;font-size:9pt}
-table{width:100%;border-collapse:collapse;margin:1.5mm 0}
-td,th{border:1px solid rgba(10,106,148,.45);padding:2mm 3mm;font-size:8.5pt;color:var(--ink);text-align:left;vertical-align:top}
-th{color:var(--soft);font-size:7pt;letter-spacing:1.5px;text-transform:uppercase;font-weight:700}
-td b{color:#000}
-footer{margin-top:auto;display:flex;justify-content:space-between;font-family:Consolas,monospace;font-size:6.5pt;color:var(--dim);letter-spacing:1.5px;border-top:1px solid var(--line);padding-top:2.5mm;text-transform:uppercase}
+@page paysage{size:A4 landscape;margin:0}
+*{box-sizing:border-box}
+body{margin:0;font-family:Georgia,'Times New Roman',serif;color:#22262e;background:#e8e8e8}
+:root{--ink:#22262e;--mut:#5a6472;--acc:#0a5c86;--acc2:#0d7cb8;--paper:#fdfdfb}
+.page{width:210mm;height:297mm;margin:0 auto;position:relative;background:var(--paper);
+  background-image:
+    radial-gradient(ellipse 26mm 20mm at 92% 4%, rgba(10,92,134,.05), transparent 70%),
+    radial-gradient(ellipse 22mm 18mm at 4% 96%, rgba(10,92,134,.045), transparent 70%);
+  box-shadow:0 0 0 1px rgba(34,38,46,.14);overflow:hidden}
+.page + .page{page-break-before:always}
+/* marges techniques façon document administratif */
+.marg{position:absolute;top:0;bottom:0;left:0;width:34mm;border-right:1px solid rgba(34,38,46,.16);
+  background:linear-gradient(90deg,rgba(34,38,46,.035),transparent 70%)}
+.marg .stamp{position:absolute;top:20mm;left:6mm;right:5mm;transform:rotate(-4deg);
+  border:1.6px solid rgba(179,18,42,.55);color:rgba(179,18,42,.75);font-size:8px;
+  font-family:'Segoe UI',Arial,sans-serif;letter-spacing:.24em;text-transform:uppercase;
+  padding:3mm 2mm;text-align:center;line-height:2}
+.marg .pgfold{position:absolute;bottom:18mm;left:6mm;right:5mm;font-size:7.5px;color:var(--mut);
+  font-family:Consolas,monospace;line-height:2.1;letter-spacing:.06em}
+.content{position:absolute;top:16mm;bottom:14mm;left:44mm;right:14mm;display:flex;flex-direction:column}
+/* en-têtes */
+.head{display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1.4px solid rgba(34,38,46,.5);padding-bottom:2.2mm;margin-bottom:5mm}
+.head .doc{font-size:11px;color:var(--mut);font-variant:small-caps;letter-spacing:.22em}
+.head .doc b{color:var(--ink);letter-spacing:.3em}
+.head .ref{font-family:Consolas,monospace;font-size:9px;color:var(--mut);text-align:right;line-height:1.7}
+/* titres */
+.chap{margin:6mm 0 2.6mm;display:flex;align-items:baseline;gap:3.5mm}
+.chap .n{font-family:Consolas,monospace;font-size:10px;color:var(--acc2);border-bottom:1.4px solid var(--acc2);
+  padding-bottom:.6mm;letter-spacing:.12em}
+.chap .t{font-size:17.5px;letter-spacing:.14em;color:var(--ink);font-variant:small-caps}
+.rule{height:1px;background:rgba(34,38,46,.22);margin:1.6mm 0 3.4mm}
+p{font-size:10.6px;line-height:1.72;color:var(--ink);margin:0 0 2.6mm;text-align:justify;hyphens:auto}
+p b{color:#000}
+.art{margin:3.4mm 0}
+.art .al{display:flex;gap:3.2mm;font-size:10.6px;line-height:1.62;color:var(--ink);margin-bottom:2.2mm}
+.art .al .no{font-family:Consolas,monospace;color:var(--acc2);font-weight:700;min-width:6.5mm}
+.art .al b{color:#000}
+/* encadré technique */
+.tech{border:1px solid rgba(10,92,134,.5);margin:3.4mm 0;padding:3.2mm 4mm;position:relative}
+.tech::before{content:"";position:absolute;left:-1px;top:-1px;bottom:-1px;width:2.4mm;background:var(--acc)}
+.tech .tt{font-size:8.2px;letter-spacing:.26em;text-transform:uppercase;color:var(--acc);
+  font-family:'Segoe UI',Arial,sans-serif;font-weight:700;margin-bottom:1.6mm}
+.tech p{margin:0;font-size:10px}
+/* note de bas de bloc */
+.note{font-family:Consolas,monospace;font-size:8.6px;color:var(--mut);margin:2mm 0 0;line-height:1.8}
+.foot{margin-top:auto;display:flex;justify-content:space-between;align-items:baseline;
+  border-top:1px solid rgba(34,38,46,.35);padding-top:2mm;
+  font-size:8.6px;color:var(--mut);font-variant:small-caps;letter-spacing:.2em}
+.foot .cod{font-family:Consolas,monospace;font-size:8px;letter-spacing:.1em}
 /* page de garde */
-.guard{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8mm;text-align:center}
-.guard .mark{font-family:Consolas,monospace;font-size:11pt;color:var(--blue);letter-spacing:6px;border:1.5px solid var(--blue);padding:3mm 8mm}
-.guard h1{font-size:24pt;font-weight:900;color:var(--ink);letter-spacing:2px;line-height:1.35;max-width:150mm}
-.guard .sub{font-size:10pt;color:var(--soft);letter-spacing:3px;text-transform:uppercase}
-.guard .meta{font-family:Consolas,monospace;font-size:8pt;color:var(--dim);line-height:2;margin-top:4mm}
+.guard{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20mm 24mm}
+.gmark{width:34mm;height:34mm;margin-bottom:10mm}
+.gref{font-family:Consolas,monospace;font-size:9px;color:var(--mut);letter-spacing:.3em;margin-bottom:16mm}
+.gtitle{font-size:34px;letter-spacing:.2em;color:var(--ink);line-height:1.5;font-variant:small-caps;font-weight:600}
+.gsub{font-size:11px;color:var(--acc2);font-variant:small-caps;letter-spacing:.4em;margin-top:7mm}
+.grule{width:52mm;height:1px;background:rgba(34,38,46,.4);margin:12mm auto 0}
+.gmax{font-style:italic;font-size:13px;color:#3d4450;letter-spacing:.04em;line-height:2.1;margin-top:9mm}
+.gmeta{font-family:Consolas,monospace;font-size:8.6px;color:var(--mut);line-height:2.2;margin-top:12mm}
 /* sommaire */
-.toc{flex:1;display:flex;flex-direction:column;justify-content:center;gap:5mm;max-width:150mm;margin:0 auto;width:100%}
-.toc-row{display:flex;align-items:baseline;gap:4mm;font-size:11pt;color:var(--ink)}
-.toc-row .dots{flex:1;border-bottom:1.5px dotted var(--soft);transform:translateY(-2mm)}
-.toc-row .pg{font-family:Consolas,monospace;color:var(--blue);font-weight:700}
-.toc-part{font-size:8pt;letter-spacing:3px;color:var(--soft);text-transform:uppercase;margin-top:3mm}
-/* carte */
-.map{border:1.5px solid var(--line);padding:4mm;margin:2.5mm 0}
-.map svg{display:block;width:100%;height:auto}
-.m-wall{fill:none;stroke:var(--blue);stroke-width:5;opacity:.85;stroke-linecap:square}
-.m-ring{fill:none;stroke:var(--blue);stroke-width:2.5}
-.m-dot{fill:#111}
-.m-num{fill:#111;font-family:Consolas,monospace;font-weight:700;font-size:44px}
-.m-gr{stroke:#d5e3ec;stroke-width:1;fill:none}
-@media print{body{background:none;padding:0;gap:0}.sheet{box-shadow:none}}
+.toc{margin-top:8mm}
+.toc .part{font-size:9.6px;color:var(--acc2);font-variant:small-caps;letter-spacing:.3em;margin:6.5mm 0 3mm}
+.toc .row{display:flex;align-items:baseline;gap:4mm;font-size:13px;color:var(--ink);margin-bottom:3.2mm}
+.toc .row .dots{flex:1;border-bottom:1.4px dotted rgba(34,38,46,.4);transform:translateY(-1.2mm)}
+.toc .row .pg{font-family:Consolas,monospace;color:var(--acc2);font-weight:700}
+.toc .row .cd{font-family:Consolas,monospace;font-size:8.6px;color:var(--mut);min-width:10mm}
+/* la carte : page paysage dédiée */
+.land{width:297mm;height:210mm;margin:0 auto;position:relative;background:var(--paper);overflow:hidden;
+  box-shadow:0 0 0 1px rgba(34,38,46,.14);page:paysage;page-break-before:always}
+.land .marg{width:30mm}
+.land .content{top:12mm;bottom:11mm;left:38mm;right:12mm}
+.maphead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2.6mm}
+.maphead .mt{font-size:15px;font-variant:small-caps;letter-spacing:.2em;color:var(--ink)}
+.maphead .ms{font-family:Consolas,monospace;font-size:8.6px;color:var(--mut)}
+.mapframe{flex:1;border:1.4px solid rgba(10,92,134,.55);position:relative;padding:5mm;
+  background:
+    linear-gradient(rgba(10,92,134,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10,92,134,.06) 1px, transparent 1px);
+  background-size:8mm 8mm}
+.mapframe svg{width:100%;height:100%;display:block}
+.m-wall{fill:none;stroke:var(--acc);stroke-width:4.5;stroke-linecap:square;opacity:.95}
+.m-lbl{fill:#5a6472;font-family:Consolas,monospace;font-size:19px;letter-spacing:1.5px}
+.m-cross{stroke:var(--acc2);stroke-width:1.6}
+.legend{display:flex;gap:8mm;align-items:center;margin-top:3mm;font-size:9.4px;color:var(--ink)}
+.legend .li{display:flex;gap:2.4mm;align-items:center}
+.legend svg{width:9mm;height:9mm}
+@media print{body{background:none}.page,.land{box-shadow:none;margin:0}}
 </style>
 </head>
 <body>
 
-<!-- ═══════════ PAGE 1 — GARDE ═══════════ -->
-<div class="sheet"><div class="inner">
-  <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
+<!-- ═══════════════ PAGE 1 — GARDE (portrait) ═══════════════ -->
+<div class="page">
   <div class="guard">
-    <div class="mark">AURORA // GRID DEF-7</div>
-    <h1>REGISTRE DES CONDUITES<br>À SUIVRE EN CAS DE<br>DANGER IMMINENT</h1>
-    <div class="sub">Édition spéciale — Secteur FECAMP</div>
-    <div class="meta">
-      RÉF. AUR-REG-001 · RÉVISION 7<br>
-      DIFFUSION : PUBLIQUE SOUS SURVEILLANCE<br>
-      « AURORA veille. AURORA se souvient. AURORA classe. »
+    <svg class="gmark" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="44" fill="none" stroke="#0a5c86" stroke-width="2.4"/>
+      <circle cx="50" cy="50" r="33" fill="none" stroke="#0a5c86" stroke-width="1"/>
+      <path d="M50 26 L60 50 L50 74 L40 50 Z" fill="#0d7cb8"/>
+      <circle cx="50" cy="50" r="4" fill="#22262e"/>
+    </svg>
+    <div class="gref">AURORA // GRID DEF-7 · RÉF. AUR-REG-001</div>
+    <div class="gtitle">Registre des conduites<br>à suivre en cas<br>de danger imminent</div>
+    <div class="gsub">édition spéciale — secteur Fécamp</div>
+    <div class="grule"></div>
+    <div class="gmax">« AURORA veille. AURORA se souvient. AURORA classe. »</div>
+    <div class="gmeta">RÉVISION 7 — ANNÉE INCONNUE<br>DIFFUSION : PUBLIQUE SOUS SURVEILLANCE<br>LECTURE INTÉGRALE OBLIGATOIRE AVANT TOUTE EXPÉDITION</div>
+  </div>
+  <div class="marg" style="border-right:none">
+    <div class="stamp">Spécimen<br>contrôlé<br>— ne pas<br>détruire —</div>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 2 — SOMMAIRE ═══════════════ -->
+<div class="page">
+  <div class="marg">
+    <div class="stamp">Spécimen<br>contrôlé</div>
+    <div class="pgfold">AUR-REG-001<br>RÉV. 7<br>P. 02/06</div>
+  </div>
+  <div class="content">
+    <div class="head">
+      <div class="doc"><b>SOMMAIRE</b> — registre des conduites</div>
+      <div class="ref">AUR-REG-001<br>RÉV. 7</div>
+    </div>
+
+    <div class="toc">
+      <div class="part">Première partie — comprendre la menace</div>
+      <div class="row"><span class="cd">CH. 01</span><span>Ce que sont les métamorphes</span><span class="dots"></span><span class="pg">03</span></div>
+      <div class="row"><span class="cd">CH. 02</span><span>Les tests de reconnaissance officiels</span><span class="dots"></span><span class="pg">03</span></div>
+
+      <div class="part">Deuxième partie — agir</div>
+      <div class="row"><span class="cd">CH. 03</span><span>Conduite en extérieur</span><span class="dots"></span><span class="pg">04</span></div>
+      <div class="row"><span class="cd">CH. 04</span><span>Carte du secteur — insert paysage</span><span class="dots"></span><span class="pg">05</span></div>
+      <div class="row"><span class="cd">CH. 05</span><span>Matériel homologué</span><span class="dots"></span><span class="pg">06</span></div>
+
+      <div class="part">Troisième partie — conclure</div>
+      <div class="row"><span class="cd">CH. 06</span><span>Protocole d'assemblage final</span><span class="dots"></span><span class="pg">06</span></div>
+    </div>
+
+    <div class="tech" style="margin-top:9mm">
+      <div class="tt">Note d'édition</div>
+      <p>La révision 6 de ce registre a été détruite par AURORA pour cause de « franchise excessive ».
+      La révision 7 a été écrite par AURORA. AURORA la juge parfaite. Le lecteur en jugera.</p>
+    </div>
+
+    <div class="foot"><span>registre des conduites</span><span class="cod">p. 02/06</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 3 — CH. 1 & 2 ═══════════════ -->
+<div class="page">
+  <div class="marg">
+    <div class="stamp">Spécimen<br>contrôlé</div>
+    <div class="pgfold">AUR-REG-001<br>RÉV. 7<br>P. 03/06</div>
+  </div>
+  <div class="content">
+    <div class="head">
+      <div class="doc"><b>LA MENACE</b> — chapitres 1 &amp; 2</div>
+      <div class="ref">AUR-REG-001<br>P. 03/06</div>
+    </div>
+
+    <div class="chap"><span class="n">CH. 01</span><span class="t">Ce que sont les métamorphes</span></div>
+    <div class="rule"></div>
+    <p>Les métamorphes sont des organismes synthétiques capables de revêtir l'apparence exacte d'un être
+    humain. Le contrôle qu'AURORA exerçait sur eux a été perdu ce soir à 19 h 42. La fence de confinement
+    est tombée à 19 h 43. AURORA préférait ne pas en parler. Le présent chapitre corrige cet oubli.</p>
+    <p>Ils ne dorment jamais, ne clignent des yeux que par politesse, et trouvent les anniversaires
+    « statistically confusing ». Tout le reste de ce qu'ils sont se trouve au chapitre suivant.</p>
+
+    <div class="chap"><span class="n">CH. 02</span><span class="t">Les tests de reconnaissance officiels</span></div>
+    <div class="rule"></div>
+    <div class="art">
+      <div class="al"><span class="no">2.1</span><span><b>Le test du stylo.</b> Tendez un stylo à la personne suspecte. Un métamorphe le reniflera toujours deux fois avant de le prendre. Toujours.</span></div>
+      <div class="al"><span class="no">2.2</span><span><b>Le test de l'escalier.</b> Les métamorphes montent les escaliers deux marches par deux, mais redescendent une marche sur trois. Comptez discrètement.</span></div>
+      <div class="al"><span class="no">2.3</span><span><b>Le test de la pizza.</b> Ananas sur pizza : le métamorphe s'en fichera totalement. Un humain, lui, aura toujours un avis. Fort.</span></div>
+      <div class="al"><span class="no">2.4</span><span><b>Le test du wifi.</b> Prononcez « le wifi est coupé » à voix haute. Un humain soupire en 0,4 seconde. Les autres sont des machines.</span></div>
+      <div class="al"><span class="no">2.5</span><span><b>Le test des chaussettes.</b> Un métamorphe porte toujours deux chaussettes rigoureusement identiques. C'est sa seule faiblesse connue. Et encore.</span></div>
+    </div>
+
+    <div class="tech">
+      <div class="tt">Avertissement d'AURORA</div>
+      <p>Les tests ci-dessus sont fiables à 100 % selon AURORA, qui les a elle-même rédigés et relus.
+      AURORA ne se contredit jamais. Vos résultats peuvent, eux, être erronés.</p>
+    </div>
+
+    <div class="foot"><span>registre des conduites</span><span class="cod">p. 03/06</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 4 — CH. 3 ═══════════════ -->
+<div class="page">
+  <div class="marg">
+    <div class="stamp">Spécimen<br>contrôlé</div>
+    <div class="pgfold">AUR-REG-001<br>RÉV. 7<br>P. 04/06</div>
+  </div>
+  <div class="content">
+    <div class="head">
+      <div class="doc"><b>CONDUITE EN EXTÉRIEUR</b> — chapitre 3</div>
+      <div class="ref">AUR-REG-001<br>P. 04/06</div>
+    </div>
+
+    <div class="chap"><span class="n">CH. 03</span><span class="t">Les règles de l'expédition</span></div>
+    <div class="rule"></div>
+    <div class="art">
+      <div class="al"><span class="no">3.1</span><span><b>Marcher dos au vent.</b> Les métamorphes détectent les humains à l'odeur de shampoing, jamais à contre-sens du vent. C'est prouvé. Par AURORA.</span></div>
+      <div class="al"><span class="no">3.2</span><span><b>Ne jamais prononcer le mot « martienne »</b> à voix haute : il est réservé au niveau de clearance 5, que personne n'atteindra jamais.</span></div>
+      <div class="al"><span class="no">3.3</span><span><b>En cas de doute, siffloter.</b> Les métamorphes détestent le sifflement. Surtout en si bémol.</span></div>
+      <div class="al"><span class="no">3.4</span><span><b>Marcher en groupes de trois.</b> Les groupes de deux se regardent l'un l'autre. Les groupes de quatre forment un carré, qui est une forme suspecte. Trois est le seul nombre sûr. AURORA a fait les calculs.</span></div>
+      <div class="al"><span class="no">3.5</span><span><b>Ne jamais remercier une porte automatique.</b> Les métamorphes commencent toujours par là. C'est leur manière de s'entraîner à la politesse humaine.</span></div>
+      <div class="al"><span class="no">3.6</span><span><b>En cas de rencontre confirmée :</b> bâillez. Les métamorphes ne savent pas bâiller de manière convaincante. Le bâillement est contagieux chez les humains — vérifiez tout le groupe d'un coup d'œil.</span></div>
+      <div class="al"><span class="no">3.7</span><span><b>Éviter le gravier.</b> Les métamorphes ne marchent jamais sur le gravier : le bruit les trahit. Si quelqu'un esquive le gravier, vous savez ce qu'il vous reste à faire.</span></div>
+    </div>
+
+    <div class="tech">
+      <div class="tt">Rappel fondamental</div>
+      <p>Le plan numérique s'efface <b>90 secondes</b> après affichage, puis se re-verrouille.
+      L'insert du chapitre 4, lui, ne s'efface pas. Le papier est supérieur. AURORA l'a constaté avec tristesse.</p>
+    </div>
+
+    <div class="foot"><span>registre des conduites</span><span class="cod">p. 04/06</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE 5 — INSERT PAYSAGE : LA CARTE (sans points) ═══════════════ -->
+<div class="land">
+  <div class="marg">
+    <div class="stamp">Insert<br>carte<br>— plier<br>avec soin —</div>
+    <div class="pgfold">AUR-REG-001<br>CH. 04<br>INSERT</div>
+  </div>
+  <div class="content">
+    <div class="maphead">
+      <div class="mt">Chapitre 4 — Carte du secteur</div>
+      <div class="ms">RÉF. AUR-REG-004 · ÉCHELLE : À PEU PRÈS · ORIENTATION : PROBABLE</div>
+    </div>
+    <div class="mapframe">
+      <svg viewBox="-58 -58 896 496" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Plan du secteur">
+        <path class="m-wall" d="M257.9 773.2L269.3 773.2M289.4 636.5L330.2 636.5M258.0 773.3L258.0 577.9M249.8 578.0L258.1 578.0M269.2 773.3L269.2 577.9M289.5 636.7L289.5 577.9M269.1 578.0L289.7 578.0M330.1 636.7L330.1 577.9M330.1 578.0L430.9 578.0M249.8 578.2L249.8 558.4M249.8 558.6L289.7 558.6M330.1 558.6L414.6 558.6M430.7 578.2L430.7 558.4M422.5 558.6L430.9 558.6M289.5 558.7L289.5 539.0M289.4 539.0L293.6 539.0M414.5 558.7L414.5 519.4M410.4 519.5L414.6 519.5M422.7 558.7L422.7 519.4M422.5 519.5L450.2 519.5M410.4 519.6L410.4 460.9M450.1 519.6L450.1 460.9M410.4 461.0L450.2 461.0M293.6 539.1L293.6 441.4M146.1 441.5L293.6 441.5M146.2 441.5L146.2 421.8M146.1 421.9L150.3 421.9M161.4 421.9L181.8 421.9M189.8 421.9L293.6 421.9M150.3 422.1L150.3 402.4M161.5 422.1L161.5 402.4M150.2 402.5L161.6 402.5M189.9 422.1L189.9 343.9M293.6 422.1L293.6 343.9M189.8 344.0L293.6 344.0M330.1 558.7L330.1 343.9M330.1 344.0L378.0 344.0M181.8 422.1L181.8 324.4M146.1 324.4L181.8 324.4M189.8 324.4L293.6 324.4M330.1 324.4L334.3 324.4M146.2 324.5L146.2 304.8M189.9 324.5L189.9 304.8M146.1 304.9L190.0 304.9M334.2 324.5L334.2 285.3M377.9 344.1L377.9 285.3M334.1 285.5L378.0 285.5M330.1 324.5L330.1 226.8M330.1 226.9L394.3 226.9M394.1 226.9L394.1 207.2M330.1 207.4L394.3 207.4M289.5 324.5L289.5 148.7M234.5 148.8L289.7 148.8M330.1 207.5L330.1 148.7M330.1 148.8L365.9 148.8M234.5 149.0L234.5 129.2M234.5 129.4L289.7 129.4M330.1 129.4L350.6 129.4M289.5 129.5L289.5 109.8M330.1 129.5L330.1 109.8M289.4 109.8L330.2 109.8M350.4 129.5L350.4 70.7M365.7 149.0L365.7 70.7M350.3 70.9L365.9 70.9"/>
+        <!-- repères topographiques : croix fines aux 5 sources, sans cercles ni points -->
+        <g class="m-cross"><line x1="352" y1="9" x2="370" y2="9"/><line x1="361" y1="0" x2="361" y2="18"/><line x1="361" y1="9" x2="361" y2="9"/></g>
+        <text class="m-lbl" x="378" y="14">SOURCE 1</text>
+        <g class="m-cross"><line x1="625" y1="94" x2="643" y2="94"/><line x1="634" y1="85" x2="634" y2="103"/></g>
+        <text class="m-lbl" x="651" y="99">SOURCE 2</text>
+        <g class="m-cross"><line x1="1" y1="117" x2="19" y2="117"/><line x1="10" y1="108" x2="10" y2="126"/></g>
+        <text class="m-lbl" x="27" y="122">SOURCE 3</text>
+        <g class="m-cross"><line x1="684" y1="218" x2="702" y2="218"/><line x1="693" y1="209" x2="693" y2="227"/></g>
+        <text class="m-lbl" x="710" y="223">SOURCE 4</text>
+        <g class="m-cross"><line x1="294" y1="290" x2="312" y2="290"/><line x1="303" y1="281" x2="303" y2="299"/></g>
+        <text class="m-lbl" x="320" y="295">SOURCE 5</text>
+      </svg>
+    </div>
+    <div class="legend">
+      <div class="li">
+        <svg viewBox="0 0 20 20"><g stroke="#0d7cb8" stroke-width="1.6"><line x1="4" y1="10" x2="16" y2="10"/><line x1="10" y1="4" x2="10" y2="16"/></g></svg>
+        source lumineuse signalée
+      </div>
+      <div class="li">
+        <svg viewBox="0 0 20 20"><line x1="2" y1="17" x2="18" y2="17" stroke="#0a5c86" stroke-width="2.6"/></svg>
+        paroi du secteur
+      </div>
+      <div class="li" style="margin-left:auto;font-family:Consolas,monospace;font-size:8.6px;color:var(--mut)">AUR-REG-004 · INSERT PAYSAGE · NE PAS PLIER EN QUATRE</div>
     </div>
   </div>
-  <footer><span>document officiel — ne pas jeter en terrain découvert</span><span>page de garde</span></footer>
-</div></div>
+</div>
 
-<!-- ═══════════ PAGE 2 — SOMMAIRE ═══════════ -->
-<div class="sheet"><div class="inner">
-  <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
-  <header>
-    <div><div class="h-title">SOMMAIRE</div><div class="h-sub">registre des conduites · révision 7</div></div>
-    <div class="h-ref">RÉF. AUR-REG-001<br>PAGES 6</div>
-  </header>
-  <div class="toc">
-    <div class="toc-part">Première partie — comprendre la menace</div>
-    <div class="toc-row"><span>Chapitre 1 — Ce que sont les métamorphes</span><span class="dots"></span><span class="pg">03</span></div>
-    <div class="toc-row"><span>Chapitre 2 — Les tests de reconnaissance officiels</span><span class="dots"></span><span class="pg">03</span></div>
-    <div class="toc-part">Deuxième partie — agir</div>
-    <div class="toc-row"><span>Chapitre 3 — Conduite en extérieur</span><span class="dots"></span><span class="pg">04</span></div>
-    <div class="toc-row"><span>Chapitre 4 — Carte du secteur &amp; localisation des fragments</span><span class="dots"></span><span class="pg">05</span></div>
-    <div class="toc-row"><span>Chapitre 5 — Matériel homologué</span><span class="dots"></span><span class="pg">06</span></div>
-    <div class="toc-part">Troisième partie — conclure</div>
-    <div class="toc-row"><span>Chapitre 6 — Protocole d'assemblage final</span><span class="dots"></span><span class="pg">06</span></div>
+<!-- ═══════════════ PAGE 6 — CH. 5 & 6 ═══════════════ -->
+<div class="page">
+  <div class="marg">
+    <div class="stamp">Spécimen<br>contrôlé</div>
+    <div class="pgfold">AUR-REG-001<br>RÉV. 7<br>P. 06/06</div>
   </div>
-  <footer><span>AURORA // registre des conduites — sommaire</span><span>la lecture intégrale est obligatoire avant toute expédition</span></footer>
-</div></div>
+  <div class="content">
+    <div class="head">
+      <div class="doc"><b>MATÉRIEL &amp; PROTOCOLE FINAL</b> — chapitres 5 &amp; 6</div>
+      <div class="ref">AUR-REG-001<br>P. 06/06</div>
+    </div>
 
-<!-- ═══════════ PAGE 3 — CH. 1 & 2 ═══════════ -->
-<div class="sheet"><div class="inner">
-  <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
-  <header>
-    <div><div class="h-title">LA MENACE</div><div class="h-sub">chapitres 1 &amp; 2</div></div>
-    <div class="h-ref">PAGES 03/06</div>
-  </header>
+    <div class="chap"><span class="n">CH. 05</span><span class="t">Matériel homologué</span></div>
+    <div class="rule"></div>
+    <div class="art">
+      <div class="al"><span class="no">5.1</span><span><b>Lampe torche</b> : seul éclairage homologué par AURORA. Les bougies sont réservées aux anniversaires. Les écrans de téléphone attirent les métamorphes, qui trouvent cela impoli.</span></div>
+      <div class="al"><span class="no">5.2</span><span><b>Le présent registre</b> : à consulter avant toute expédition. Il ne sert à rien après. Ni avant, en vérité. Mais il faut le consulter.</span></div>
+      <div class="al"><span class="no">5.3</span><span><b>Chaussettes intérieures</b> : voir chapitre 2, test n° 2.5. La règle la plus importante de ce registre.</span></div>
+    </div>
 
-  <h2>Chapitre 1 — Ce que sont les métamorphes</h2>
-  <p>Les métamorphes sont des organismes synthétiques capables de revêtir l'apparence exacte d'un être humain.
-  Le contrôle qu'AURORA exerçait sur eux a été perdu ce soir à 19 h 42. La fence de confinement est tombée à 19 h 43.
-  AURORA préférait ne pas en parler. Le présent chapitre corrige cet oubli.</p>
+    <div class="chap"><span class="n">CH. 06</span><span class="t">Protocole d'assemblage final</span></div>
+    <div class="rule"></div>
+    <div class="art">
+      <div class="al"><span class="no">6.1</span><span>Rallier le <b>point de rassemblement</b> avec les fragments (chiffres) ET les bandes de la transmission (lettres).</span></div>
+      <div class="al"><span class="no">6.2</span><span>Composer la séquence complète au terminal : <b>quinze chiffres</b>. Les cases verrouillées servent de repères. Un groupe correct s'affiche en vert ; un groupe erroné s'efface.</span></div>
+      <div class="al"><span class="no">6.3</span><span>Répondre à la <b>question secrète</b> : assembler les cinq bandes de la transmission interceptée, lire la question entière, écrire la réponse — un mot, huit lettres.</span></div>
+      <div class="al"><span class="no">6.4</span><span>Si le terminal refuse trois fois : il se verrouille quinze secondes. Profitez-en pour relire ce registre. Il ne sert toujours à rien.</span></div>
+    </div>
 
-  <h2>Chapitre 2 — Les tests de reconnaissance officiels</h2>
-  <ol>
-    <li><b>Le test du stylo.</b> Tendez un stylo à la personne suspecte. Un métamorphe le reniflera toujours deux fois avant de le prendre. Toujours.</li>
-    <li><b>Le test de l'escalier.</b> Les métamorphes montent les escaliers deux marches par deux, mais redescendent une marche sur trois. Comptez discrètement.</li>
-    <li><b>Le test de la pizza.</b> Ananas sur pizza : le métamorphe s'en fichera totalement. Un humain, lui, aura toujours un avis. Fort.</li>
-    <li><b>Le test du wifi.</b> Prononcez « le wifi est coupé » à voix haute. Un humain soupire en 0,4 seconde. Les autres sont des machines.</li>
-    <li><b>Le test des chaussettes.</b> Un métamorphe porte toujours deux chaussettes rigoureusement identiques. C'est sa seule faiblesse connue. Et encore.</li>
-  </ol>
-  <div class="box">
-    <div class="box-t">Avertissement d'AURORA</div>
-    <p>Les tests ci-dessus sont fiables à 100 % selon AURORA, qui les a elle-même rédigés et relus.
-    AURORA ne se contredit jamais. Vos résultats peuvent, eux, être erronés.</p>
+    <div class="tech">
+      <div class="tt">Article final — la seule vraie consigne</div>
+      <p>N'accordez jamais une confiance sans limites à une intelligence artificielle.
+      Vérifiez. Doutez. Réfléchissez par vous-mêmes. <b>C'est la seule ligne de ce registre qu'AURORA n'a pas écrite.</b></p>
+    </div>
+
+    <div class="note">— fin du registre — AURORA remercie les 412 élèves analysés ce soir et confirme que 100 % d'entre eux sont des métamorphes. Statistiquement, quelqu'un ment.</div>
+
+    <div class="foot"><span>registre des conduites</span><span class="cod">p. 06/06</span></div>
   </div>
-
-  <footer><span>AURORA // registre des conduites — page 03/06</span><span>toute ressemblance avec des testeurs de métamorphes existants est fortuite</span></footer>
-</div></div>
-
-<!-- ═══════════ PAGE 4 — CH. 3 ═══════════ -->
-<div class="sheet"><div class="inner">
-  <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
-  <header>
-    <div><div class="h-title">CONDUITE EN EXTÉRIEUR</div><div class="h-sub">chapitre 3</div></div>
-    <div class="h-ref">PAGE 04/06</div>
-  </header>
-
-  <h2>Chapitre 3 — Les règles de l'expédition</h2>
-  <ol>
-    <li><b>Marcher dos au vent.</b> Les métamorphes détectent les humains à l'odeur de shampoing, jamais à contre-sens du vent. C'est prouvé. Par AURORA.</li>
-    <li><b>Ne jamais prononcer le mot « martienne »</b> à voix haute : il est réservé au niveau de clearance 5, que personne n'atteindra jamais.</li>
-    <li><b>En cas de doute, siffloter.</b> Les métamorphes détestent le sifflement. Surtout en si bémol.</li>
-    <li><b>Marcher en groupes de trois.</b> Les groupes de deux se regardent l'un l'autre. Les groupes de quatre forment un carré, qui est une forme suspecte. Trois est le seul nombre sûr. AURORA a fait les calculs.</li>
-    <li><b>Ne jamais remercier une porte automatique.</b> Les métamorphes commencent toujours par là. C'est leur manière de s'entraîner à la politesse humaine.</li>
-    <li><b>En cas de rencontre avec un métamorphe confirmé :</b> baillez. Les métamorphes ne savent pas bâiller de manière convaincante. Le baillement est contagieux chez les humains — profitez-en pour vérifier tout le groupe d'un coup d'œil.</li>
-    <li><b>Limite de sécurité du gravier.</b> Les métamorphes ne marchent jamais sur le gravier : le bruit les trahit. Si quelqu'un esquive le gravier, vous savez ce qu'il vous reste à faire.</li>
-  </ol>
-  <div class="box">
-    <div class="box-t">Rappel fondamental</div>
-    <p>Le plan numérique s'efface <b>90 secondes</b> après affichage, puis se re-verrouille.
-    La page 05 du présent registre, elle, ne s'efface pas. Le papier est supérieur. AURORA l'a constaté avec tristesse.</p>
-  </div>
-
-  <footer><span>AURORA // registre des conduites — page 04/06</span><span>si vous lisez ceci à voix haute, les métamorphes ont déjà gagné</span></footer>
-</div></div>
-
-<!-- ═══════════ PAGE 5 — CH. 4 : LA CARTE ═══════════ -->
-<div class="sheet"><div class="inner">
-  <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
-  <header>
-    <div><div class="h-title">CARTE DU SECTEUR</div><div class="h-sub">chapitre 4 — géolocalisation des fragments</div></div>
-    <div class="h-ref">PAGE 05/06<br>ÉCHELLE : À PEU PRÈS</div>
-  </header>
-
-  <div class="map">
-    <svg viewBox="-60 -60 900 500" role="img" aria-label="Plan du secteur avec les cinq sites">
-      <path class="m-gr" d="M0 -60H840M0 60H840M0 180H840M0 300H840M0 420H840M-60 0V440M60 0V440M180 0V440M300 0V440M420 0V440M540 0V440M660 0V440M780 0V440"/>
-      <path class="m-wall" d="M257.9 773.2L269.3 773.2M289.4 636.5L330.2 636.5M258.0 773.3L258.0 577.9M249.8 578.0L258.1 578.0M269.2 773.3L269.2 577.9M289.5 636.7L289.5 577.9M269.1 578.0L289.7 578.0M330.1 636.7L330.1 577.9M330.1 578.0L430.9 578.0M249.8 578.2L249.8 558.4M249.8 558.6L289.7 558.6M330.1 558.6L414.6 558.6M430.7 578.2L430.7 558.4M422.5 558.6L430.9 558.6M289.5 558.7L289.5 539.0M289.4 539.0L293.6 539.0M414.5 558.7L414.5 519.4M410.4 519.5L414.6 519.5M422.7 558.7L422.7 519.4M422.5 519.5L450.2 519.5M410.4 519.6L410.4 460.9M450.1 519.6L450.1 460.9M410.4 461.0L450.2 461.0M293.6 539.1L293.6 441.4M146.1 441.5L293.6 441.5M146.2 441.5L146.2 421.8M146.1 421.9L150.3 421.9M161.4 421.9L181.8 421.9M189.8 421.9L293.6 421.9M150.3 422.1L150.3 402.4M161.5 422.1L161.5 402.4M150.2 402.5L161.6 402.5M189.9 422.1L189.9 343.9M293.6 422.1L293.6 343.9M189.8 344.0L293.6 344.0M330.1 558.7L330.1 343.9M330.1 344.0L378.0 344.0M181.8 422.1L181.8 324.4M146.1 324.4L181.8 324.4M189.8 324.4L293.6 324.4M330.1 324.4L334.3 324.4M146.2 324.5L146.2 304.8M189.9 324.5L189.9 304.8M146.1 304.9L190.0 304.9M334.2 324.5L334.2 285.3M377.9 344.1L377.9 285.3M334.1 285.5L378.0 285.5M330.1 324.5L330.1 226.8M330.1 226.9L394.3 226.9M394.1 226.9L394.1 207.2M330.1 207.4L394.3 207.4M289.5 324.5L289.5 148.7M234.5 148.8L289.7 148.8M330.1 207.5L330.1 148.7M330.1 148.8L365.9 148.8M234.5 149.0L234.5 129.2M234.5 129.4L289.7 129.4M330.1 129.4L350.6 129.4M289.5 129.5L289.5 109.8M330.1 129.5L330.1 109.8M289.4 109.8L330.2 109.8M350.4 129.5L350.4 70.7M365.7 149.0L365.7 70.7M350.3 70.9L365.9 70.9"/>
-      <g><circle class="m-ring" cx="361" cy="9" r="26"/><circle class="m-dot" cx="361" cy="9" r="9"/><text class="m-num" x="397" y="22">1</text></g>
-      <g><circle class="m-ring" cx="634" cy="94" r="26"/><circle class="m-dot" cx="634" cy="94" r="9"/><text class="m-num" x="670" y="107">2</text></g>
-      <g><circle class="m-ring" cx="10" cy="117" r="26"/><circle class="m-dot" cx="10" cy="117" r="9"/><text class="m-num" x="46" y="130">3</text></g>
-      <g><circle class="m-ring" cx="693" cy="218" r="26"/><circle class="m-dot" cx="693" cy="218" r="9"/><text class="m-num" x="729" y="231">4</text></g>
-      <g><circle class="m-ring" cx="303" cy="290" r="26"/><circle class="m-dot" cx="303" cy="290" r="9"/><text class="m-num" x="339" y="303">5</text></g>
-    </svg>
-  </div>
-
-  <table>
-    <tr><th>Source</th><th>Contenu</th><th>Confiance</th></tr>
-    <tr><td><b>SITE 1</b></td><td>fragment 01 — chiffres du code</td><td>élevée</td></tr>
-    <tr><td><b>SITE 2</b></td><td>fragment 02 — chiffres du code</td><td>élevée</td></tr>
-    <tr><td><b>SITE 3</b></td><td>fragment 03 — chiffres du code</td><td>moyenne*</td></tr>
-    <tr><td><b>SITE 4</b></td><td>fragment 04 — chiffres du code</td><td>élevée</td></tr>
-    <tr><td><b>SITE 5</b></td><td>transmission interceptée — question secrète</td><td>absolue</td></tr>
-  </table>
-  <div class="note">* confiance moyenne : le site 3 a déjà tenté de négocier. Les sites ne négocient pas. C'est interdit, page 06.</div>
-
-  <footer><span>AURORA // registre des conduites — page 05/06</span><span>orientation : probable</span></footer>
-</div></div>
-
-<!-- ═══════════ PAGE 6 — CH. 5 & 6 ═══════════ -->
-<div class="sheet"><div class="inner">
-  <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
-  <header>
-    <div><div class="h-title">MATÉRIEL &amp; PROTOCOLE FINAL</div><div class="h-sub">chapitres 5 &amp; 6</div></div>
-    <div class="h-ref">PAGE 06/06</div>
-  </header>
-
-  <h2>Chapitre 5 — Matériel homologué</h2>
-  <ol>
-    <li><b>Lampe torche</b> : seul éclairage homologué par AURORA. Les bougies sont réservées aux anniversaires. Les écrans de téléphone attirent les métamorphes, qui trouvent cela impoli.</li>
-    <li><b>Le présent registre</b> : à consulter avant toute expédition. Il ne sert à rien après. Ni avant, en vérité. Mais il faut le consulter.</li>
-    <li><b>Chaussettes intérieures</b> : voir chapitre 2, test n° 5. La règle la plus importante de ce registre.</li>
-  </ol>
-
-  <h2>Chapitre 6 — Protocole d'assemblage final</h2>
-  <ol>
-    <li>Rallier le <b>point de rassemblement</b> avec les fragments (chiffres) ET les bandes de la transmission (lettres).</li>
-    <li>Composer la séquence complète au terminal : <b>quinze chiffres</b>. Les cases verrouillées servent de repères. Un groupe correct s'affiche en vert ; un groupe erroné s'efface.</li>
-    <li>Répondre à la <b>question secrète</b> : assembler les cinq bandes de la transmission interceptée, lire la question, écrire la réponse — un mot, huit lettres.</li>
-    <li>Si le terminal refuse trois fois : il se verrouille quinze secondes. Profitez-en pour relire ce registre. Il ne sert toujours à rien.</li>
-  </ol>
-
-  <div class="box">
-    <div class="box-t">Article final — la seule vraie consigne</div>
-    <p>N'accordez jamais une confiance sans limites à une intelligence artificielle.
-    Vérifiez. Doutez. Réfléchissez par vous-mêmes. <b>C'est la seule ligne de ce registre qu'AURORA n'a pas écrite.</b></p>
-  </div>
-
-  <div class="note">— fin du registre — AURORA remercie les 412 élèves analysés ce soir et confirme que 100 % d'entre eux sont des métamorphes. Statistiquement, quelqu'un ment.</div>
-
-  <footer><span>AURORA // registre des conduites — page 06/06</span><span>toute reproduction non autorisée sera jugée adorable</span></footer>
-</div></div>
+</div>
 
 </body>
 </html>
