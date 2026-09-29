@@ -16,14 +16,15 @@
 .statusbar{
   flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;width:100%;
   max-width:1400px;
-  font-size:clamp(.55em,1.5vmin,.75em);letter-spacing:.24em;text-transform:uppercase;color:var(--blue-soft);
+  font-size:clamp(.55em,1.5vmin,.75em);letter-spacing:.24em;text-transform:uppercase;color:#ff5468;
 }
-.statusbar .rec{color:var(--white)}
-.blink{animation:hudBlink 1.1s steps(2) infinite}
+.statusbar .rec{color:#ff1e3c}
+.blink{animation:hudBlink 1.1s steps(2) infinite;color:#ff1e3c}
+.rec-dot{background:#ff1e3c !important;box-shadow:0 0 8px #ff1e3c}
 
 .screenwrap{
   flex:1 1 auto;position:relative;min-height:0;width:100%;max-width:1400px;
-  border:1px solid rgba(0,200,255,.4);
+  border:1px solid rgba(255,30,60,.5);
   background:#000;
   box-shadow:0 0 40px rgba(0,200,255,.14),inset 0 0 80px rgba(0,30,60,.5);
   overflow:hidden;
@@ -154,7 +155,7 @@ canvas{width:100%;height:100%;display:block}
 <div class="stage" id="stage">
   <header id="topbar">
     <div class="hud-left">
-      <span class="cursor-block">AURORA&nbsp;//&nbsp;CANAL&nbsp;SÉCURISÉ&nbsp;7-A</span>
+      <span class="cursor-block" style="color:#ff5468">AURORA&nbsp;//&nbsp;CANAL&nbsp;D'ALERTE&nbsp;7-A</span>
     </div>
     <div class="hud-left">
       <span id="clock">--:--:--</span>
@@ -165,8 +166,8 @@ canvas{width:100%;height:100%;display:block}
 
   <main class="stage-viewport" id="viewport-video">
     <div class="statusbar">
-      <span>TRANSMISSION ENTRANTE — PRIORITÉ ABSOLUE</span>
-      <span><span class="rec blink">●</span>&nbsp;RÉCEPTION EN COURS</span>
+      <span>⚠ PROTOCOLE D'URGENCE DÉCLENCHÉ — DANGER CRITIQUE</span>
+      <span><span class="rec blink">●</span>&nbsp;ENREGISTREMENT D'URGENCE</span>
     </div>
 
     <div class="screenwrap">
