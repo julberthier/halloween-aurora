@@ -5,10 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AURORA // GRID — 03 Reconnaissance</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%2300c8ff'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/style.css?v=4">
+<link rel="preload" href="assets/fonts/orbitron.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/sharetechmono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/style.css?v=5">
 <style>
 /* ═══════════ PHASE 03 — CARTE TACTIQUE (plan importé du PDF) ═══════════ */
 #viewport-map{gap:clamp(8px,1.6vh,16px)}
@@ -173,6 +172,9 @@
 #mj-dot:hover{background:rgba(0,200,255,.55);box-shadow:0 0 8px var(--blue)}
 #mj-dot.solo{z-index:40}
 
+/* éléments animés isolés en calques GPU : leurs animations ne repeignent plus le reste */
+.map-legend .li i{will-change:transform}
+
 @media (max-height:560px){
   .map-frame svg{max-height:44vh}
   .map-title{font-size:clamp(.6em,1.8vmin,.9em)}
@@ -306,11 +308,12 @@
 <div id="scanlines"></div>
 <div class="vignette"></div>
 
-<script src="assets/core.js?v=4"></script>
+<script src="assets/core.js?v=5"></script>
 <script>
 (function(){
 "use strict";
 AURORA.boot("map");
+AURORA.prefetch(["code.html", "assets/succes.mp3", "assets/erreur.mp3"]);
 AURORA.sfxPreload(["bip","succes","erreur"]);
 
 /* ═══════════ CONFIG ═══════════ */

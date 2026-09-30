@@ -3,6 +3,13 @@
    Thème : noir + bleu pétant + blanc. Rouge RÉSERVÉ au bouton
    d'urgence et aux alertes critiques (cibles, refus).
    ════════════════════════════════════════════════════════════ */
+/* polices embarquées (plus aucune dépendance réseau externe) — mêmes fichiers que Google Fonts */
+@font-face{font-family:'Orbitron';font-style:normal;font-weight:400 900;font-display:block;
+  src:url(fonts/orbitron.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Share Tech Mono';font-style:normal;font-weight:400;font-display:block;
+  src:url(fonts/sharetechmono.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 :root{
   --bg:#01040a;
   --ink:#eaf6ff;
@@ -64,36 +71,35 @@ button{font-family:inherit;cursor:pointer}
 
 /* ---------- overlays ---------- */
 #flash{
-  position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:70;
+  position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:70;will-change:opacity;contain:strict;
 }
-#flash.go{animation:flashAnim .5s ease-out forwards}
+#flash{display:none}
+#flash.go{display:block;animation:flashAnim .5s ease-out forwards}
 @keyframes flashAnim{0%{opacity:.95}100%{opacity:0}}
 #static-overlay{
   position:fixed;inset:0;pointer-events:none;opacity:0;z-index:60;
   background:
     repeating-linear-gradient(0deg,rgba(255,255,255,.85) 0 2px,transparent 2px 7px),
     repeating-linear-gradient(90deg,rgba(0,200,255,.75) 0 3px,transparent 3px 9px);
-  mix-blend-mode:screen;
 }
-#static-overlay.go{animation:staticFlash .66s steps(9) forwards}
+#static-overlay{display:none}
+#static-overlay.go{display:block;mix-blend-mode:screen;animation:staticFlash .66s steps(9) forwards}
 @keyframes staticFlash{
   0%{opacity:0}12%{opacity:.95;transform:translateY(-8px)}
   30%{opacity:.55;transform:translateY(6px) scaleY(1.4)}
   55%{opacity:.85;transform:translateY(-4px)}
   80%{opacity:.3}100%{opacity:0}
 }
+/* scanlines + reflet + vignette fusionnés en UN seul calque (même ordre d'empilement,
+   même rendu) : le GPU ne mélange plus qu'une surface plein écran par image */
 #scanlines{
-  position:fixed;inset:0;pointer-events:none;z-index:80;
-  background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.055) 2px 4px);
+  position:fixed;inset:0;pointer-events:none;z-index:80;will-change:transform;contain:strict;
+  background:
+    radial-gradient(ellipse 105% 90% at 50% 46%,transparent 58%,rgba(0,0,0,.55) 100%),
+    linear-gradient(180deg,transparent,rgba(0,200,255,.03) 48%,rgba(0,0,0,.16)),
+    repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.055) 2px 4px);
 }
-#scanlines::after{
-  content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,transparent,rgba(0,200,255,.03) 48%,rgba(0,0,0,.16));
-}
-.vignette{
-  position:fixed;inset:0;pointer-events:none;z-index:81;
-  background:radial-gradient(ellipse 105% 90% at 50% 46%,transparent 58%,rgba(0,0,0,.55) 100%);
-}
+.vignette{display:none}
 body.glitch-burst .stage{animation:gBurst .13s steps(2) 1}
 @keyframes gBurst{
   0%{transform:translate(3px,-2px) skewX(1.5deg)}
@@ -121,6 +127,7 @@ body.debug .skip-btn{display:block}
 }
 
 /* ---------- transitions de SORTIE de page ---------- */
+body.page-exit-prep .stage{will-change:transform,opacity,filter}
 /* déclenchées par AURORA.goPage({fx:...}) avant location.href */
 body.page-exit-blast .stage{
   animation:pExitBlast .45s cubic-bezier(.5,0,.9,.4) forwards;

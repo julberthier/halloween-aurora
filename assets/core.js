@@ -70,20 +70,41 @@ function goPage(opt){
   /* conserve le mode debug à travers la navigation */
   var url = opt.url;
   if (AURORA.debug){ url += (url.indexOf("?") >= 0 ? "&" : "?") + "debug=1"; }
-  if (fx === "blast"){
-    var f = qs("flash");
-    if (f){ f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
+  /* la scène est d'abord promue en calque GPU (1 image), puis l'effet démarre :
+     aucune saccade sur la première image de la transition */
+  document.body.classList.add("page-exit-prep");
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){
+    if (fx === "blast"){
+      var f = qs("flash");
+      if (f){ f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
+    }
+    if (fx === "static"){
+      var s = qs("static-overlay");
+      if (s){ s.classList.remove("go"); void s.offsetWidth; s.classList.add("go"); }
+    }
+    if (ms > 0){
+      document.body.classList.add("page-exit-" + fx);
+      setTimeout(function(){ location.href = url; }, ms);
+    } else {
+      location.href = url;
+    }
+  }); });
+}
+
+/* ---------- préchargement de la phase suivante ---------- */
+/* pendant que le joueur est sur une page, la suivante et ses médias lourds
+   descendent en tâche de fond : le changement de page n'attend plus le réseau */
+function prefetch(urls){
+  function run(){
+    (urls || []).forEach(function(u){
+      if (document.querySelector('link[rel="prefetch"][href="' + u + '"]')) return;
+      var l = document.createElement("link");
+      l.rel = "prefetch"; l.href = u;
+      document.head.appendChild(l);
+    });
   }
-  if (fx === "static"){
-    var s = qs("static-overlay");
-    if (s){ s.classList.remove("go"); void s.offsetWidth; s.classList.add("go"); }
-  }
-  if (ms > 0){
-    document.body.classList.add("page-exit-" + fx);
-    setTimeout(function(){ location.href = url; }, ms);
-  } else {
-    location.href = url;
-  }
+  var later = function(){ (window.requestIdleCallback || function(f){ setTimeout(f, 200); })(run, { timeout: 2000 }); };
+  if (document.readyState === "complete") later(); else window.addEventListener("load", later);
 }
 
 /* ---------- amorçage commun d'une page ---------- */
@@ -134,6 +155,7 @@ AURORA.getStage = getStage;
 AURORA.clearStage = clearStage;
 AURORA.goPage = goPage;
 AURORA.boot = boot;
+AURORA.prefetch = prefetch;
 window.AURORA = AURORA;
 
 })(window);
