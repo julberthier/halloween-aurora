@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>AURORA — Fiche d'opération : métamorphe</title>
+<style>
+@page{size:A4;margin:0}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--blue:#0a6a94;--soft:#4d7f9e;--dim:#7a8a95;--ink:#1a2430;--red:#b3122a;--line:#0a6a94}
+body{background:#ddd;font-family:'Segoe UI',Arial,sans-serif;display:flex;flex-direction:column;align-items:center;gap:24px;padding:24px 0}
+.sheet{width:210mm;height:297mm;background:#fff;position:relative;overflow:hidden;page-break-after:always;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.inner{position:absolute;inset:8mm;border:2px solid var(--line);padding:6mm 8mm;display:flex;flex-direction:column}
+.corner{position:absolute;width:18px;height:18px;border:2.5px solid var(--blue)}
+.c1{top:-2px;left:-2px;border-right:none;border-bottom:none}
+.c2{top:-2px;right:-2px;border-left:none;border-bottom:none}
+.c3{bottom:-2px;left:-2px;border-right:none;border-top:none}
+.c4{bottom:-2px;right:-2px;border-left:none;border-top:none}
+header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1.5px solid var(--line);padding-bottom:2.8mm;margin-bottom:3.2mm}
+.h-title{font-weight:900;font-size:16pt;letter-spacing:3px;color:var(--ink)}
+.h-title span{color:var(--blue)}
+.h-sub{font-size:7.5pt;letter-spacing:2.5px;color:var(--blue);text-transform:uppercase;font-weight:700;margin-top:1.5mm}
+.h-ref{font-family:Consolas,monospace;font-size:7pt;color:var(--dim);text-align:right;line-height:1.7}
+h2{font-size:9.2pt;letter-spacing:1.8px;color:var(--blue);text-transform:uppercase;margin:2.6mm 0 1.5mm}
+h2::before{content:"▸ "}
+p{font-size:8.2pt;line-height:1.42;color:var(--ink);margin-bottom:1.6mm}
+p b,li b{color:#000}
+/* bandeau d'identité : c'est LUI le monstre, la fiche parle au spécimen */
+.idband{display:grid;grid-template-columns:34mm 1fr 30mm;gap:0;border:1.5px solid var(--blue);margin-bottom:4mm}
+.idband>div{padding:2.2mm 3.5mm;font-size:8pt;color:var(--ink)}
+.idband .k{background:rgba(10,106,148,.08);color:var(--blue);font-family:Consolas,monospace;font-size:7.2pt;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;font-weight:700}
+.idband .v b{display:block;font-size:11.5pt;letter-spacing:2px}
+.idband .warn{background:#b3122a;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;font-size:7pt;letter-spacing:1.5px;text-transform:uppercase;line-height:1.5}
+ul{list-style:none;margin:0 0 2.5mm}
+li{font-size:8.2pt;line-height:1.42;color:var(--ink);padding:1mm 0 1mm 7mm;position:relative;border-bottom:1px dotted rgba(10,106,148,.35)}
+li::before{content:"■";position:absolute;left:2mm;top:1.9mm;color:var(--blue);font-size:7pt}
+li.danger::before{content:"⚠";color:var(--red);font-size:10pt;top:1.4mm}
+li.danger{padding-left:9mm}
+table{width:100%;border-collapse:collapse;margin:1.5mm 0}
+td,th{border:1px solid rgba(10,106,148,.45);padding:1.2mm 2.4mm;font-size:7.8pt;color:var(--ink);text-align:left;vertical-align:top}
+th{color:var(--soft);font-size:6.8pt;letter-spacing:1.5px;text-transform:uppercase;font-weight:700}
+td b{color:#000}
+/* encadré règles de vie du jeu (réalité de la soirée) */
+.box{border:1.5px solid var(--red);padding:2.5mm 4mm;margin:2.2mm 0;background:rgba(179,18,42,.04)}
+.box h3{font-size:9pt;letter-spacing:2px;color:var(--red);text-transform:uppercase;margin-bottom:2mm}
+.box p{font-size:8pt;margin-bottom:1.2mm}
+.box p:last-child{margin-bottom:0}
+/* déroulé d'une rencontre */
+.flow{display:grid;grid-template-columns:14mm 1fr;gap:.8mm 3mm;margin:1mm 0;font-size:8pt}
+.flow .t{font-family:Consolas,monospace;color:var(--blue);font-weight:700;padding-top:.4mm;text-align:right}
+.flow .d{color:var(--ink)}
+.flow .d b{color:#000}
+footer{margin-top:auto;display:flex;justify-content:space-between;font-family:Consolas,monospace;font-size:6.5pt;color:var(--dim);letter-spacing:1.5px;border-top:1px solid rgba(10,106,148,.4);padding-top:2.5mm;text-transform:uppercase}
+.sig{display:grid;grid-template-columns:1fr 1fr;gap:8mm;margin-top:2.5mm}
+.sig div{border-top:1px solid var(--ink);padding-top:1.5mm;font-size:7pt;color:var(--dim);letter-spacing:1px;text-transform:uppercase;font-family:Consolas,monospace}
+@media print{body{background:none;padding:0;gap:0}.sheet{box-shadow:none}}
+</style>
+</head>
+<body>
+
+<div class="sheet"><div class="inner">
+  <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
+  <header>
+    <div>
+      <div class="h-title">SPÉCIMEN <span>// MÉTAMORPHE</span></div>
+      <div class="h-sub">fiche d'opération — lecture obligatoire avant infiltration</div>
+    </div>
+    <div class="h-ref">RÉF. AUR-SPE-013<br>COPIE UNIQUE — NE PAS REMETTRE<br>À UN ÉLÈVE</div>
+  </header>
+
+  <div class="idband">
+    <div class="k">Identité de couverture</div>
+    <div class="v"><b>MÉTAMORPHE</b>Vous jouez une créature infiltrée parmi les humains. Les élèves ne savent pas qui vous êtes. Vous le savez à peine.</div>
+    <div class="warn">⚠ si un élève lit cette fiche, il saura tout — gardez-la sur vous, pliée</div>
+  </div>
+
+  <h2>Votre mission ce soir</h2>
+  <p>Vous êtes <b>l'obstacle</b> et <b>le trésor</b>. Les élèves doivent traverser le secteur pour trouver des lampes torches et des fragments de code. Votre rôle : les croiser, les surprendre, les faire frissonner — puis vous faire « capturer » au bon moment, car <b>vous portez sur vous un fragment de la question finale</b>.</p>
+
+  <h2>Comportement — les règles du spécimen</h2>
+  <ul>
+    <li><b>Déambulez lentement.</b> Vous errez dans le secteur, seul ou en petit groupe de spécimens. Vous ne courez JAMAIS après un élève. La lenteur est plus effrayante que la course.</li>
+    <li><b>Une torche vous pointe : vous vous figez.</b> Faisceau sur vous = immobilité totale, regard vide, jusqu'à l'extinction. C'est la règle n°1 du registre — elle est vraie. Respectez-la à la lettre : c'est elle qui donne du pouvoir aux torches.</li>
+    <li><b>Le faisceau s'éteint : vous reprenez votre marche.</b> Lentement. Dans leur direction de préférence, mais sans jamais toucher personne.</li>
+    <li class="danger"><b>Contact physique : JAMAIS.</b> Aucun contact, aucune course-poursuite, aucune saisie. Vous effrayez par la présence, le silence et la fixité. Rien d'autre.</li>
+    <li><b>Vous ne parlez pas.</b> Aucun mot, aucun son. Un métamorphe qui parle est un métamorphe démasqué. Grognements et souffles admis, discrètement.</li>
+    <li><b>Imitez.</b> Copiez la posture d'un élève immobile, arrêtez-vous quand il s'arrête. C'est votre marque de fabrique — et la consigne 1.4 du registre.</li>
+    <li><b>Rires et brusques mouvements de tête</b> si un groupe vient de passer : les élèves ont consigne de vérifier ces « réflexes humains ». Jouez avec.</li>
+  </ul>
+
+  <div class="sig">
+    <div>Lu et approuvé — spécimen (recto)</div>
+    <div>Maître du jeu — AURORA</div>
+  </div>
+
+  <footer><span>AURORA // fiche spécimen métamorphe — 14.10 — secteur FECAMP — 1/2</span><span>en cas de doute : figez-vous</span></footer>
+</div></div>
+
+<div class="sheet"><div class="inner">
+  <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
+  <header>
+    <div>
+      <div class="h-title">SPÉCIMEN <span>// MÉTAMORPHE</span></div>
+      <div class="h-sub">fiche d'opération — suite et fin</div>
+    </div>
+    <div class="h-ref">RÉF. AUR-SPE-013<br>COPIE UNIQUE — 2/2</div>
+  </header>
+
+  <h2>Votre fragment — le cœur de la mission</h2>
+  <div class="box">
+    <h3>Fragment de la question finale</h3>
+    <p>Vous portez dans votre poche <b>une bande de papier (B1 à B5)</b> : un morceau de la question que les élèves doivent assembler pour la fin de la soirée. <b>Un seul fragment par spécimen. Cinq fragments au total dans le secteur.</b></p>
+    <p>Règle de remise : <b>un groupe ne peut vous prendre votre fragment que torche allumée sur vous</b> (vous êtes alors figé). Découvrez partiellement la bande dans votre poche, laissez-la dépasser — les élèves « fouillent » pendant votre immobilisation, vous les laissez faire. Donnez la bande, reprenez votre errance.</p>
+    <p><b>Fragment remis = spécimen épuisé.</b> Vous ne portez plus rien : si un autre groupe vous accoste, vous le laissez vérifier vos poches vides (la consigne 1.6 du registre le leur explique — c'est normal, dites-vous avec toute votre immobilisation).</p>
+  </div>
+
+  <h2>Déroulé d'une rencontre</h2>
+  <div class="flow">
+    <div class="t">errance</div><div class="d">Vous déambulez. Un groupe vous repère — chuchotements, torches qui se lèvent.</div>
+    <div class="t">figé</div><div class="d">Faisceau sur vous : <b>immobilité totale</b>. Le groupe s'approche, vous inspecte (consigne 1.4 : bâillement, rire nerveux — vous n'en avez pas), fouille votre poche.</div>
+    <div class="t">échange</div><div class="d">Vous laissez prendre la bande. Aucun mot. Le groupe recule à pas mesurés, faisceau maintenu — exactement ce que le registre leur a appris.</div>
+    <div class="t">libre</div><div class="d">Faisceau éteint et groupe à distance : vous reprenez votre marche lente, ailleurs. Poche vide, spécimen épuisé pour la nuit.</div>
+  </div>
+
+  <h2>Ce que le registre dit de vous (vous pouvez jouer avec)</h2>
+  <table>
+    <tr><th>Consigne (registre)</th><th>Réalité pour vous</th></tr>
+    <tr><td>1.1 — figé par la lumière</td><td><b>Vraie.</b> Votre règle absolue.</td></tr>
+    <tr><td>1.4 — imite, ne bâille pas</td><td><b>Vraie.</b> Imitez les postures. Ne bâillez jamais.</td></tr>
+    <tr><td>1.6 — porte un fragment</td><td><b>Vraie jusqu'à épuisement.</b> Puis poches vides.</td></tr>
+    <tr><td>Tests 2.1 à 2.4</td><td>Aucun n'est réalisable : vous ne réagissez à rien d'autre qu'à la lumière.</td></tr>
+  </table>
+
+  <h2>Règles réelles de la soirée (hors jeu)</h2>
+  <ul>
+    <li class="danger"><b>Sécurité absolue :</b> aucun contact, aucune course dans les couloirs, aucun coin sombre isolé avec un groupe. Si un élève court ou grimpe : restez immobile et attendez qu'un adulte soit visible.</li>
+    <li><b>Restez dans votre zone assignée</b> par le maître du jeu. Un spécimen qui change de secteur casse le rythme du jeu.</li>
+    <li><b>Ne révélez jamais la fin du jeu</b> (ni le code, ni le mot surprise, ni le rôle d'AURORA). Vous êtes le mystère, pas le narrateur.</li>
+    <li><b>Souriez avec les yeux.</b> Derrière l'immobilité, un métamorphe amuse les élèves autant qu'il les inquiète : ils doivent en garder des histoires à raconter.</li>
+  </ul>
+
+  <div class="sig">
+    <div>Lu et approuvé — spécimen (verso)</div>
+    <div>Maître du jeu — AURORA</div>
+  </div>
+
+  <footer><span>AURORA // fiche spécimen métamorphe — 14.10 — secteur FECAMP — 2/2</span><span>en cas de doute : figez-vous</span></footer>
+</div></div>
+
+</body>
+</html>

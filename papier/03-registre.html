@@ -37,6 +37,20 @@ body{margin:0;font-family:Georgia,'Times New Roman',serif;color:#22262e;backgrou
   padding-bottom:.6mm;letter-spacing:.12em}
 .chap .t{font-size:17.5px;letter-spacing:.14em;color:var(--ink);font-variant:small-caps}
 .rule{height:1px;background:rgba(34,38,46,.22);margin:1.6mm 0 3.4mm}
+/* encadré alerte : où trouver les morceaux du code */
+.wherebox{
+  border:2px solid var(--red);background:rgba(179,18,42,.05);
+  padding:3.2mm 4.5mm;margin:0 0 4.2mm;position:relative;
+}
+.wherebox .wb-t{
+  font-weight:900;font-size:11.5pt;letter-spacing:1.2px;color:var(--red);
+  text-transform:uppercase;margin-bottom:1.8mm;
+}
+.wherebox .wb-t::before{content:"⚠ "}
+.wherebox p{font-size:9.6pt;line-height:1.6;margin-bottom:1.5mm}
+.wherebox p:last-child{margin-bottom:0}
+.wherebox b{color:var(--red)}
+.wherebox .wb-ref{position:absolute;top:2mm;right:3mm;font-family:Consolas,monospace;font-size:7pt;color:var(--red);letter-spacing:1px}
 p{font-size:10.6px;line-height:1.72;color:var(--ink);margin:0 0 2.6mm;text-align:justify;hyphens:auto}
 p b{color:#000}
 .art{margin:3.4mm 0}
@@ -163,6 +177,15 @@ p b{color:#000}
 
     <div class="chap"><span class="n">CH. 01</span><span class="t">Comportement documenté du spécimen</span></div>
     <div class="rule"></div>
+    <div class="wherebox">
+      <div class="wb-ref">AVIS AUR-REG-044</div>
+      <div class="wb-t">Où trouver les morceaux du code final</div>
+      <p>Les fragments composant la <b>séquence d'annihilation</b> ne sont pas au même endroit :
+      certains sont <b>cachés dans des zones du secteur</b> (dépôts, recoins, locaux signalés au chapitre 4),
+      les autres sont <b>portés sur eux par les métamorphes eux-mêmes</b> (consigne 1.6).</p>
+      <p>Aucun fragment n'est accessible sans <b>lampe torche en main</b> (consigne 1.1) :
+      récupérez les torches AVANT de chercher. Fouillez méthodiquement — et fouillez les spécimens.</p>
+    </div>
     <p>Le présent chapitre décrit les comportements observés du spécimen désigné sous l'appellation
     « métamorphe », ainsi que la conduite à tenir pour chacun. La lecture du tableau ci-dessous est
     requise avant toute sortie. Toute conduite non conforme au présent chapitre engage son auteur.</p>
