@@ -387,8 +387,10 @@ function tryCode(){
   }
 }
 
-/* clavier physique */
+/* clavier physique — inactif quand on écrit la réponse secrète */
 document.addEventListener("keydown", function(e){
+  var ae = document.activeElement;
+  if (ae && (ae.id === "secret-input")) return;   /* la frappe appartient au champ texte */
   if (/^[0-9]$/.test(e.key)){ pressDigit(e.key); }
   else if (e.key === "Backspace"){ e.preventDefault(); pressDel(); }
   else if (e.key === "ArrowLeft"){
