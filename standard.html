@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURORA // STANDARD</title>
+<style>
+:root{--bg:#01040a;--ink:#eaf6ff;--blue:#00c8ff;--blue-soft:#7fd4ff;--red:#ff1e3c}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  font-family:'Share Tech Mono','Consolas',monospace;user-select:none}
+#app{height:100dvh;display:flex;flex-direction:column}
+/* ── barre haut ── */
+#bar{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;
+  padding:8px 14px;border-bottom:1px solid rgba(0,200,255,.3);
+  font-size:12px;letter-spacing:.2em;color:var(--blue-soft);text-transform:uppercase}
+#bar .r{color:#4d7f9e}
+/* ── corps : mosaïque gauche, carte droite ── */
+#body{flex:1 1 auto;display:flex;min-height:0}
+#mosaic{flex:1 1 55%;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;
+  gap:4px;padding:4px;background:#000;min-width:0}
+.cell{position:relative;background:#020810;border:1px solid rgba(0,200,255,.2);min-height:0;overflow:hidden}
+.cell .tag{position:absolute;top:6px;left:8px;z-index:3;font-size:11px;letter-spacing:.2em;
+  color:var(--blue);background:rgba(1,4,10,.7);padding:2px 8px;border-radius:3px}
+.cell .gps{position:absolute;bottom:6px;left:8px;z-index:3;font-size:10px;color:#4d7f9e;
+  background:rgba(1,4,10,.7);padding:2px 8px;border-radius:3px}
+.cell iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.cell .off{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#123;font-size:12px;letter-spacing:.25em}
+/* carte */
+#mapside{flex:1 1 45%;display:flex;flex-direction:column;border-left:1px solid rgba(0,200,255,.3);min-width:0}
+#mapwrap{flex:1 1 auto;position:relative;min-height:0;background:#01040a;padding:8px}
+#mapwrap svg{width:100%;height:100%;display:block}
+.blip{fill:var(--white);stroke:var(--blue);stroke-width:1.5}
+.blip-label{fill:var(--blue-soft);font-family:'Share Tech Mono',monospace;font-size:15px;letter-spacing:2px}
+.blip-ring{fill:none;stroke:var(--blue);opacity:.5}
+#maplegend{flex:0 0 auto;padding:6px 12px;font-size:10px;color:#4d7f9e;letter-spacing:.15em;text-transform:uppercase;
+  border-top:1px solid rgba(0,200,255,.2)}
+/* ── barre bas : push to talk ── */
+#ptt{flex:0 0 auto;display:flex;gap:8px;padding:10px 12px;border-top:1px solid rgba(0,200,255,.3);align-items:center}
+.sel{width:56px;height:56px;border:1px solid rgba(0,200,255,.5);border-radius:6px;background:rgba(0,200,255,.07);
+  color:var(--white);font-size:20px;font-weight:700;font-family:'Share Tech Mono',monospace}
+.sel.active{background:var(--blue);color:#01040a;box-shadow:0 0 18px rgba(0,200,255,.6)}
+#talk{flex:1;height:56px;border:1px solid rgba(255,30,60,.6);border-radius:6px;background:rgba(255,30,60,.1);
+  color:#fff;font-size:15px;letter-spacing:.3em;text-transform:uppercase}
+#talk.on{background:var(--red);box-shadow:0 0 24px rgba(255,30,60,.7)}
+#talk small{display:block;font-size:9px;letter-spacing:.2em;color:#ffb0bd}
+#talk.on small{color:#fff}
+#micstate{font-size:10px;color:#4d7f9e;text-transform:uppercase;letter-spacing:.15em;writing-mode:vertical-rl;transform:rotate(180deg)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="bar">
+    <span>AURORA // STANDARD — SECTEUR FECAMP</span>
+    <span class="r" id="clock">--:--:--</span>
+  </div>
+  <div id="body">
+    <div id="mosaic"></div>
+    <div id="mapside">
+      <div id="mapwrap"></div>
+      <div id="maplegend">POSITIONS GPS · PRÉCISION 5-15 M · ACTUALISATION CONTINUE</div>
+    </div>
+  </div>
+  <div id="ptt">
+    <button class="sel" data-g="1">G1</button>
+    <button class="sel" data-g="2">G2</button>
+    <button class="sel" data-g="3">G3</button>
+    <button class="sel" data-g="4">G4</button>
+    <button class="sel" data-g="5">G5</button>
+    <button id="talk"><small>appuyer et parler</small>TRANSMETTRE</button>
+    <span id="micstate">MIC</span>
+  </div>
+</div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+(function(){
+"use strict";
+/* ═══ CONFIG ═══ */
+var ROOM = "AURORA-MISSION-14";
+var FT_ORIGIN = "https://framatalk.org";
+var STD_ID = "standard-aurora";
+
+/* horloge */
+setInterval(function(){
+  var d = new Date();
+  function p(n){ return (n<10?"0":"")+n; }
+  document.getElementById("clock").textContent = p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+}, 1000);
+
+/* ═══ 1. MOSAÏQUE : le standard rejoint le même salon, 5 affichages ═══ */
+/* Jitsi n'autorise qu'une participation par onglet : on rejoint UNE fois (vignette mosaïque)
+   et on affiche 5 iframes pointant le même salon en mode "vue film" n'est pas possible.
+   Solution robuste : 5 iframes du même salon, chaque iframe suit un participant via
+   l'API externe (selectParticipant). Le standard lui-même ne publie ni cam ni micro
+   dans ces iframes — il publie son micro UNIQUEMENT via WebRTC (bouton TRANSMETTRE). */
+var mosaic = document.getElementById("mosaic");
+var apis = [];
+for (var i = 1; i <= 5; i++){
+  var cell = document.createElement("div");
+  cell.className = "cell";
+  cell.innerHTML = '<div class="tag">GROUPE ' + i + '</div>' +
+    '<div class="gps" id="gps-' + i + '">—</div>' +
+    '<div class="off" id="off-' + i + '">EN ATTENTE</div>';
+  var ifr = document.createElement("iframe");
+  ifr.allow = "camera; microphone; autoplay; fullscreen";
+  ifr.src = FT_ORIGIN + "/" + ROOM + "#userInfo.displayName=STANDARD&config.startWithVideoMuted=true&config.startWithAudioMuted=true";
+  cell.appendChild(ifr);
+  mosaic.appendChild(cell);
+}
+
+/* ═══ 2. CARTE : plan du secteur + repères GPS ═══ */
+/* bornes GPS du lycée — À CALIBRER sur site (voir feuille MJ) */
+var BOUNDS = { lat1: 49.7580, lng1: 0.3760, lat2: 49.7600, lng2: 0.3790 }; /* défaut : à recaler */
+var WALLS = "M0.1 111.8L0.1 123.3M136.7 143.4L136.7 184.2M0.0 111.9L195.4 111.9M195.3 103.8L195.3 112.1M0.0 123.1L195.4 123.1M136.6 143.5L195.4 143.5M195.3 123.0L195.3 143.6M136.6 184.0L195.4 184.0M195.3 184.0L195.3 284.8M195.1 103.8L214.8 103.8M214.7 103.8L214.7 143.6M214.7 184.0L214.7 268.5M195.1 284.7L214.8 284.7M214.7 276.5L214.7 284.8M214.6 143.5L234.3 143.5M234.3 143.4L234.3 147.6M214.6 268.4L253.9 268.4M253.8 264.3L253.8 268.5M214.6 276.6L253.9 276.6M253.8 276.5L253.8 304.2M253.7 264.3L312.4 264.3M253.7 304.0L312.4 304.0M312.3 264.3L312.3 304.2M234.2 147.6L331.9 147.6M331.7 0.0L331.7 147.6M331.7 0.1L351.5 0.1M351.3 0.0L351.3 4.2M351.3 15.3L351.3 35.7M351.3 43.7L351.3 147.6M351.2 4.2L370.9 4.2M351.2 15.4L370.9 15.4M370.8 4.1L370.8 15.5M351.2 43.8L429.4 43.8M351.2 147.6L429.4 147.6M429.3 43.7L429.3 147.6M214.6 184.0L429.4 184.0M429.3 184.0L429.3 231.9M351.2 35.7L448.9 35.7M448.9 0.0L448.9 35.7M448.9 43.7L448.9 147.6M448.9 184.0L448.9 188.2M448.8 0.1L468.5 0.1M448.8 43.8L468.5 43.8M468.4 0.0L468.4 43.9M448.8 188.1L488.0 188.1M429.2 231.8L488.0 231.8M487.8 188.0L487.8 231.9M448.8 184.0L546.5 184.0M546.4 184.0L546.4 248.2M546.4 248.1L566.1 248.1M565.9 184.0L565.9 248.2M448.8 143.5L624.6 143.5M624.5 88.5L624.5 143.6M565.8 184.0L624.6 184.0M624.5 184.0L624.5 219.8M624.3 88.5L644.0 88.5M643.9 88.5L643.9 143.6M643.9 184.0L643.9 204.5M643.8 143.5L663.5 143.5M643.8 184.0L663.5 184.0M663.5 143.4L663.5 184.2M643.8 204.4L702.6 204.4M624.3 219.7L702.6 219.7M702.4 204.3L702.4 219.8";
+var mapwrap = document.getElementById("mapwrap");
+mapwrap.innerHTML = '<svg viewBox="-30 -30 765 365">' +
+  '<path d="' + WALLS + '" fill="none" stroke="rgba(0,200,255,.5)" stroke-width="2.5"/>' +
+  '<g id="blips"></g></svg>';
+var blipsG = document.getElementById("blips");
+function toXY(lat, lng){
+  var x = (lng - BOUNDS.lng1) / (BOUNDS.lng2 - BOUNDS.lng1) * 702;
+  var y = (BOUNDS.lat1 - lat) / (BOUNDS.lat1 - BOUNDS.lat2) * 304;
+  return { x: Math.max(-10, Math.min(712, x)), y: Math.max(-10, Math.min(314, y)) };
+}
+var lastPos = {};
+function updBlip(g){
+  var p = lastPos[g];
+  var el = document.getElementById("blip-" + g);
+  var ring = document.getElementById("ring-" + g);
+  var lbl = document.getElementById("lb-" + g);
+  if (!el){ 
+    el = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    el.id = "blip-" + g; el.setAttribute("r", 6); el.setAttribute("class", "blip");
+    ring = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    ring.id = "ring-" + g; ring.setAttribute("r", 11); ring.setAttribute("class", "blip-ring");
+    lbl = document.createElementNS("http://www.w3.org/2000/svg","text");
+    lbl.id = "lb-" + g; lbl.setAttribute("class", "blip-label"); lbl.textContent = "G"+g;
+    blipsG.appendChild(ring); blipsG.appendChild(el); blipsG.appendChild(lbl);
+  }
+  if (!p) return;
+  var xy = toXY(p.lat, p.lng);
+  el.setAttribute("cx", xy.x); el.setAttribute("cy", xy.y);
+  ring.setAttribute("cx", xy.x); ring.setAttribute("cy", xy.y);
+  lbl.setAttribute("x", xy.x + 13); lbl.setAttribute("y", xy.y + 5);
+  var gpsEl = document.getElementById("gps-" + g);
+  if (gpsEl) gpsEl.textContent = "±" + (p.acc || "?") + " m · " + new Date(p.ts).toLocaleTimeString("fr-FR");
+  var off = document.getElementById("off-" + g);
+  if (off) off.style.display = "none";
+}
+
+/* ═══ 3. PEERJS : recevoir les balises, appeler pour parler ═══ */
+var peer = new Peer(STD_ID, { debug: 0 });
+var conns = {};   /* g -> dataConnection */
+var calls = {};   /* g -> MediaConnection */
+var micStream = null;
+peer.on("open", function(){ console.log("standard prêt"); });
+peer.on("connection", function(conn){
+  conn.on("data", function(d){
+    if (d && d.t === "state" && d.g){
+      conns[d.g] = conn;
+      if (d.pos){ lastPos[d.g] = d.pos; updBlip(d.g); }
+    }
+  });
+});
+peer.on("error", function(e){ console.warn("peer:", e.type); });
+
+/* micro du standard : acquisition paresseuse, partagée entre les appels */
+function getMic(){
+  if (micStream) return Promise.resolve(micStream);
+  return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } })
+    .then(function(s){ micStream = s; return s; });
+}
+
+/* ═══ 4. PUSH-TO-TALK ═══ */
+var selG = 1;
+document.querySelectorAll(".sel").forEach(function(b){
+  b.addEventListener("click", function(){
+    selG = parseInt(b.dataset.g, 10);
+    document.querySelectorAll(".sel").forEach(function(x){ x.classList.remove("active"); });
+    b.classList.add("active");
+  });
+});
+document.querySelector(".sel[data-g='1']").classList.add("active");
+
+var talk = document.getElementById("talk");
+var micstate = document.getElementById("micstate");
+function startTalk(){
+  getMic().then(function(stream){
+    var g = selG;
+    if (!conns[g]){ talkFail("BALISE G" + g + " HORS LIGNE"); return; }
+    var target = "balise-g" + g;
+    var call = peer.call(target, stream);
+    calls[g] = call;
+    talk.classList.add("on"); talk.querySelector("small").textContent = "EN LIGNE AVEC G" + g;
+    micstate.textContent = "MIC ON";
+    call.on("close", function(){ endTalk(); });
+  }).catch(function(){ talkFail("MICRO REFUSÉ"); });
+}
+function endTalk(){
+  Object.keys(calls).forEach(function(g){ try{ calls[g].close(); }catch(e){} calls[g] = null; });
+  talk.classList.remove("on"); talk.querySelector("small").textContent = "appuyer et parler";
+  micstate.textContent = "MIC";
+}
+function talkFail(msg){
+  talk.querySelector("small").textContent = msg;
+  setTimeout(function(){ talk.querySelector("small").textContent = "appuyer et parler"; }, 1800);
+}
+talk.addEventListener("pointerdown", function(e){ e.preventDefault(); startTalk(); });
+talk.addEventListener("pointerup", function(e){ e.preventDefault(); endTalk(); });
+talk.addEventListener("pointerleave", function(){ endTalk(); });
+/* clavier : barre espace */
+document.addEventListener("keydown", function(e){ if (e.code === "Space" && !e.repeat){ e.preventDefault(); startTalk(); } });
+document.addEventListener("keyup", function(e){ if (e.code === "Space"){ e.preventDefault(); endTalk(); } });
+
+/* rafraîchissement visuel des blips même sans nouveau point */
+setInterval(function(){ for (var g = 1; g <= 5; g++) if (lastPos[g]) updBlip(g); }, 2000);
+})();
+</script>
+</body>
+</html>
