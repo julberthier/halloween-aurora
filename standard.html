@@ -485,7 +485,7 @@ var mjClicks = [];
 $("mj-dot").addEventListener("click", function(){
   var now = Date.now();
   mjClicks = mjClicks.filter(function(t){ return now - t < 1200; }); mjClicks.push(now);
-  if (mjClicks.length >= 3){ mjClicks = []; openMj(); }
+  if (mjClicks.length >= 3){ mjClicks = []; AURORA.sfx("succes", 0.45); leave(); }   /* triple clic = passage direct au code */
 });
 function openMj(){
   groupsAll.forEach(function(g){ setTalk(g, false); });
