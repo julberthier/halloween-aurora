@@ -1,0 +1,135 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Mini fiches métamorphe — 2 par A4</title>
+<style>@page{size:297mm 210mm;margin:0}
+:root{--blue:#0a6a94;--soft:#4d7f9e;--dim:#7a8a95;--ink:#1a2430;--red:#b3122a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.fiche{width:148mm;height:210mm;padding:7.5mm 10mm 6mm;display:flex;flex-direction:column;overflow:hidden;background:#fff}
+header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1.6pt solid var(--blue);padding-bottom:2.2mm;margin-bottom:3mm}
+.kicker{font-family:Consolas,monospace;font-size:7pt;letter-spacing:2.2px;color:var(--blue);font-weight:700}
+h1{font-size:15.5pt;font-weight:700;letter-spacing:.2px;margin-top:.8mm}
+.ref{font-family:Consolas,monospace;font-size:6.6pt;color:var(--dim);text-align:right;line-height:1.6;text-transform:uppercase;letter-spacing:.6px}
+.core{border:1.2pt solid var(--blue);border-left-width:4pt;padding:2.6mm 3.4mm;margin-bottom:3mm;background:rgba(10,106,148,.06)}
+.core-t{font-family:Consolas,monospace;font-size:7pt;letter-spacing:1.6px;color:var(--blue);font-weight:700;text-transform:uppercase;margin-bottom:1.2mm}
+.core p{font-size:9.6pt;line-height:1.5}
+h2{font-family:Consolas,monospace;font-size:7.6pt;letter-spacing:1.8px;color:var(--blue);text-transform:uppercase;margin:0 0 1.6mm;font-weight:700}
+ul{list-style:none;margin-bottom:2.6mm}
+li{font-size:8.7pt;line-height:1.36;padding-left:4mm;position:relative;margin-bottom:.8mm}
+li::before{content:"";position:absolute;left:.6mm;top:1.9mm;width:1.5mm;height:1.5mm;background:var(--blue)}
+.safe{border:1.2pt solid var(--red);padding:2.4mm 3.2mm .6mm;margin-top:auto;margin-bottom:3mm}
+.safe-t{font-family:Consolas,monospace;font-size:7.4pt;letter-spacing:1.6px;color:var(--red);font-weight:700;text-transform:uppercase;margin-bottom:1.4mm}
+.safe ul{margin-bottom:1.6mm}
+.safe li::before{background:var(--red)}
+
+.flow{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:1.4mm 3mm;margin-bottom:2.6mm}
+.flow li{padding:1.3mm 2.2mm;border:1px solid rgba(10,106,148,.35);font-size:8.2pt;line-height:1.35;margin:0}
+.flow li::before{display:none}
+.flow li span{display:block;font-family:Consolas,monospace;font-size:7pt;letter-spacing:1.4px;color:var(--blue);font-weight:700;text-transform:uppercase;margin-bottom:.5mm;counter-increment:st}
+.flow{counter-reset:st}
+.flow li span::before{content:counter(st) " · "}
+footer{display:flex;justify-content:space-between;font-family:Consolas,monospace;font-size:7pt;color:var(--soft);border-top:1px solid rgba(10,106,148,.4);padding-top:2.2mm;text-transform:uppercase;letter-spacing:.6px}
+
+.sheet{width:297mm;height:210mm;display:flex;position:relative}
+.cut{position:absolute;left:148.5mm;top:0;bottom:0;border-left:.6pt dashed #9aa;}
+.cut span{position:absolute;top:2mm;left:-2.4mm;font-size:8pt;color:#9aa;background:#fff}
+.fiche{width:148.5mm}
+</style></head><body><div class="sheet"><section class="fiche">
+  <header>
+    <div>
+      <div class="kicker">AURORA // SPÉCIMEN</div>
+      <h1>Métamorphe — l’essentiel</h1>
+    </div>
+    <div class="ref">AUR-SPE-013-R<br>À garder plié sur vous</div>
+  </header>
+
+  <div class="core">
+    <div class="core-t">La règle qui fait tenir le jeu</div>
+    <p><b>Lumière sur vous : vous vous figez.</b> Immobile, regard vide, jusqu'à ce que la torche s'éteigne.<br>
+    <b>Torche éteinte : vous repartez</b>, lentement, plutôt vers eux.</p>
+  </div>
+
+  <h2>Comportement</h2>
+  <ul>
+    <li><b>Vous ne parlez pas.</b> De toute la soirée. Un souffle, à la rigueur.</li>
+    <li><b>Vous marchez, vous ne courez jamais.</b> Avancer lentement vers un groupe fait plus peur qu'une poursuite.</li>
+    <li><b>Le bruit vous libère.</b> Si un groupe crie ou court, vous pouvez marcher même dans la lumière, jusqu'au retour du calme.</li>
+    <li><b>Un cri bref</b> signale que vous passez en alerte. À utiliser rarement : répété, il fait rire.</li>
+    <li><b>Vous imitez</b> les postures et les rires, avec un temps de retard. Aux blagues et aux questions pièges, aucune réaction.</li>
+  </ul>
+
+  <h2>Votre fragment</h2>
+  <ul>
+    <li>Une bande de papier dans la poche : un morceau de la question finale.</li>
+    <li>On ne vous fouille que <b>figé par une torche</b>. Laissez dépasser un coin, ne tendez rien.</li>
+    <li>Une fois la bande prise, reprenez votre errance. Les groupes suivants trouveront une poche vide, laissez-les vérifier.</li>
+  </ul>
+
+  <h2>Une rencontre, en 4 temps</h2>
+  <ol class="flow">
+    <li><span>Errance</span>Vous déambulez. Un groupe vous repère.</li>
+    <li><span>Figé</span>Torche sur vous : statue. Ils approchent et fouillent.</li>
+    <li><span>Échange</span>Ils prennent la bande. Vous ne bougez pas.</li>
+    <li><span>Libre</span>Torche éteinte, groupe parti : vous repartez ailleurs.</li>
+  </ol>
+
+  <div class="safe">
+    <div class="safe-t">Sécurité — non négociable</div>
+    <ul>
+      <li><b>Aucun contact physique.</b> Ni attraper, ni pousser, ni barrer un passage.</li>
+      <li>Pas de course dans les couloirs, pas de groupe coincé dans un recoin sombre.</li>
+      <li>Un élève paniqué ou en danger : vous sortez du rôle immédiatement.</li>
+      <li>Restez dans votre zone. Les adultes au brassard rouge accompagnent les groupes : ignorez-les.</li>
+    </ul>
+  </div>
+
+  <footer><span>Zone : ______________</span><span>Fragment : B___</span><span>Contact MJ : ______________</span></footer>
+</section><section class="fiche">
+  <header>
+    <div>
+      <div class="kicker">AURORA // SPÉCIMEN</div>
+      <h1>Métamorphe — l’essentiel</h1>
+    </div>
+    <div class="ref">AUR-SPE-013-R<br>À garder plié sur vous</div>
+  </header>
+
+  <div class="core">
+    <div class="core-t">La règle qui fait tenir le jeu</div>
+    <p><b>Lumière sur vous : vous vous figez.</b> Immobile, regard vide, jusqu'à ce que la torche s'éteigne.<br>
+    <b>Torche éteinte : vous repartez</b>, lentement, plutôt vers eux.</p>
+  </div>
+
+  <h2>Comportement</h2>
+  <ul>
+    <li><b>Vous ne parlez pas.</b> De toute la soirée. Un souffle, à la rigueur.</li>
+    <li><b>Vous marchez, vous ne courez jamais.</b> Avancer lentement vers un groupe fait plus peur qu'une poursuite.</li>
+    <li><b>Le bruit vous libère.</b> Si un groupe crie ou court, vous pouvez marcher même dans la lumière, jusqu'au retour du calme.</li>
+    <li><b>Un cri bref</b> signale que vous passez en alerte. À utiliser rarement : répété, il fait rire.</li>
+    <li><b>Vous imitez</b> les postures et les rires, avec un temps de retard. Aux blagues et aux questions pièges, aucune réaction.</li>
+  </ul>
+
+  <h2>Votre fragment</h2>
+  <ul>
+    <li>Une bande de papier dans la poche : un morceau de la question finale.</li>
+    <li>On ne vous fouille que <b>figé par une torche</b>. Laissez dépasser un coin, ne tendez rien.</li>
+    <li>Une fois la bande prise, reprenez votre errance. Les groupes suivants trouveront une poche vide, laissez-les vérifier.</li>
+  </ul>
+
+  <h2>Une rencontre, en 4 temps</h2>
+  <ol class="flow">
+    <li><span>Errance</span>Vous déambulez. Un groupe vous repère.</li>
+    <li><span>Figé</span>Torche sur vous : statue. Ils approchent et fouillent.</li>
+    <li><span>Échange</span>Ils prennent la bande. Vous ne bougez pas.</li>
+    <li><span>Libre</span>Torche éteinte, groupe parti : vous repartez ailleurs.</li>
+  </ol>
+
+  <div class="safe">
+    <div class="safe-t">Sécurité — non négociable</div>
+    <ul>
+      <li><b>Aucun contact physique.</b> Ni attraper, ni pousser, ni barrer un passage.</li>
+      <li>Pas de course dans les couloirs, pas de groupe coincé dans un recoin sombre.</li>
+      <li>Un élève paniqué ou en danger : vous sortez du rôle immédiatement.</li>
+      <li>Restez dans votre zone. Les adultes au brassard rouge accompagnent les groupes : ignorez-les.</li>
+    </ul>
+  </div>
+
+  <footer><span>Zone : ______________</span><span>Fragment : B___</span><span>Contact MJ : ______________</span></footer>
+</section><div class="cut"><span>✂</span></div></div></body></html>
