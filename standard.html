@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AURORA // STANDARD</title>
+<link rel="stylesheet" href="assets/style.css?v=5">
 <style>
 :root{--bg:#01040a;--ink:#eaf6ff;--blue:#00c8ff;--soft:#7fd4ff;--dim:#4d7f9e;--red:#ff1e3c}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -55,17 +56,23 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
 #gate p{font-size:12px;color:var(--dim);letter-spacing:.1em;max-width:520px;line-height:1.8}
 #gate button{background:rgba(0,200,255,.12);border:1px solid var(--blue);color:#fff;padding:16px 28px;font:700 15px 'Share Tech Mono',monospace;letter-spacing:.25em;border-radius:6px}
 #gerr{color:var(--red);font-size:12px;min-height:1em}
+#bar .phase{color:var(--dim)}
+#bar .r{display:flex;align-items:center;gap:14px}
+/* point secret maître du jeu (même geste que sur la carte : triple clic, ou taper « mj ») */
+#mj-dot{width:9px;height:9px;border-radius:50%;background:rgba(0,200,255,.16);border:none;cursor:pointer;flex:0 0 auto}
+#mj-dot:hover{background:rgba(0,200,255,.6);box-shadow:0 0 8px var(--blue)}
+.mj-warn{font-size:11px;letter-spacing:.08em;color:#ff5468;line-height:1.6}
 </style>
 </head>
 <body>
 <div id="gate">
   <h1>AURORA // STANDARD</h1>
-  <p>Poste central de guidage. Ouvrir CETTE page en premier, puis les cinq balises.<br>Le micro de cet appareil sera transmis au groupe choisi, uniquement pendant l'appui sur son bouton.</p>
+  <p>Poste central de guidage. Les balises peuvent être allumées avant : elles se connectent dès l'activation.<br>Le micro de cet appareil sera transmis au groupe choisi, uniquement pendant l'appui sur son bouton.</p>
   <button id="go">ACTIVER LE STANDARD</button>
   <div id="gerr"></div>
 </div>
-<div id="app">
-  <div id="bar"><span>AURORA // STANDARD — SECTEUR FÉCAMP</span><span id="net">HORS LIGNE</span><span id="clock">--:--:--</span></div>
+<div id="app" class="stage">
+  <div id="bar"><span>AURORA // STANDARD — SECTEUR FÉCAMP</span><span class="phase" id="stage-label">PHASE 04/06 — GUIDAGE</span><span class="r"><span id="net">HORS LIGNE</span><span id="clock">--:--:--</span><button id="mj-dot" title="" aria-label="."></button></span></div>
   <div id="body">
     <div id="mosaic"></div>
     <div id="mapside">
@@ -76,10 +83,34 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
   </div>
   <div id="ptt"></div>
 </div>
+<button class="skip-btn" id="skip-std" style="top:auto;bottom:96px;right:16px;position:fixed">Passer ▸▸</button>
+
+<!-- modale maître du jeu : passage à l'authentification du code -->
+<div id="modal-mj">
+  <div class="mj-box">
+    <div class="mj-title">Console maître du jeu</div>
+    <div class="mj-sub">Fin du guidage — passer à l'authentification du code</div>
+    <div class="mj-warn">Les balises perdront la voix et la vidéo. Vérifiez que tous les groupes sont revenus.</div>
+    <input id="mj-input" type="password" autocomplete="off" spellcheck="false">
+    <div id="mj-err"></div>
+    <div class="mj-row">
+      <button class="mj-btn" id="mj-cancel">Annuler</button>
+      <button class="mj-btn" id="mj-ok">Valider</button>
+    </div>
+  </div>
+</div>
+<div id="flash"></div>
+<div id="static-overlay"></div>
+<div id="scanlines"></div>
+
+<script src="assets/core.js?v=6"></script>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 (function(){
 "use strict";
+AURORA.boot("standard");
+AURORA.prefetch(["code.html", "assets/succes.mp3", "assets/erreur.mp3"]);
+AURORA.sfxPreload(["succes", "erreur"]);
 var PREFIX = "jb-aurora14-", STD_ID = PREFIX + "standard";
 var NS = "http://www.w3.org/2000/svg";
 var $ = function(id){ return document.getElementById(id); };
@@ -100,7 +131,7 @@ for (var i = 1; i <= 5; i++){
   $("mosaic").appendChild(c);
 }
 var info = document.createElement("div"); info.className = "cell"; info.id = "mapcell";
-info.innerHTML = '<div class="ov" style="background:none;line-height:2;flex-direction:column;gap:8px"><div>MAINTENIR LE BOUTON DU GROUPE<br>POUR LUI PARLER<br><span style="color:#ff5468">CLAVIER : TOUCHES 1 À 5 · 0 = TOUS</span></div>' +
+info.innerHTML = '<div class="ov" style="background:none;line-height:2;flex-direction:column;gap:8px"><div>PARLER À UN GROUPE :<br>MAINTENIR SON BOUTON<br><span style="color:#ff5468">CLAVIER 1 À 5 · 0 = TOUS</span></div>' +
   '<button id="recal" style="pointer-events:auto;background:rgba(0,200,255,.12);border:1px solid #00c8ff;color:#fff;padding:9px 14px;font:700 11px Share Tech Mono,monospace;letter-spacing:.15em;border-radius:4px">RECALER LES BALISES AU DÉPART</button>' +
   '<div id="recal-msg" style="font-size:10px;color:#7fd4ff;min-height:1em"></div></div>';
 $("mosaic").appendChild(info);
@@ -379,13 +410,14 @@ var ba = document.createElement("button"); ba.className = "pt all"; ba.id = "pt-
 ba.innerHTML = "TOUS<small>ANNONCE</small>"; $("ptt").appendChild(ba); bindPTT(ba, groupsAll);
 /* clavier : touches 1 à 5 maintenues, 0 = tous */
 var held = {};
+function typing(){ var a = document.activeElement; return a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA"); }
 document.addEventListener("keydown", function(e){
-  if (e.repeat) return; var k = e.key;
+  if (e.repeat || typing()) return; var k = e.key;
   if (/^[1-5]$/.test(k)){ held[k] = 1; setTalk(+k, true); }
   else if (k === "0"){ held[k] = 1; groupsAll.forEach(function(g){ setTalk(g, true); }); $("pt-all").classList.add("on"); }
 });
 document.addEventListener("keyup", function(e){
-  var k = e.key;
+  if (typing()) return; var k = e.key;
   if (/^[1-5]$/.test(k)) setTalk(+k, false);
   else if (k === "0"){ groupsAll.forEach(function(g){ setTalk(g, false); }); $("pt-all").classList.remove("on"); }
 });
@@ -442,7 +474,42 @@ $("go").addEventListener("click", function(){
     })
     .catch(function(e){ $("gerr").textContent = "MICRO REFUSÉ OU ABSENT — autorisez le micro puis réessayez (" + (e && e.name) + ")"; });
 });
-window.__aurora = { recalStart: recalStart, startMeters: startMeters, G: G, setTalk: setTalk, project: project, addPos: addPos, WALKAT: function(x,y){ return WALK ? WALK[cell(x,y)] : -1; }, toLatLng: toLatLng, baseXY: baseXY };
+/* ── passage à la phase suivante (maître du jeu) ── */
+function leave(){
+  groupsAll.forEach(function(g){ setTalk(g, false); });
+  try { if (peer) peer.destroy(); } catch(e){}
+  if (mic) mic.getTracks().forEach(function(t){ t.stop(); });
+  AURORA.goPage({ url: "code.html", stage: "code", fx: "static" });
+}
+var mjClicks = [];
+$("mj-dot").addEventListener("click", function(){
+  var now = Date.now();
+  mjClicks = mjClicks.filter(function(t){ return now - t < 1200; }); mjClicks.push(now);
+  if (mjClicks.length >= 3){ mjClicks = []; openMj(); }
+});
+function openMj(){
+  groupsAll.forEach(function(g){ setTalk(g, false); });
+  $("mj-err").textContent = ""; $("mj-input").value = "";
+  $("modal-mj").classList.add("show");
+  setTimeout(function(){ $("mj-input").focus(); }, 60);
+}
+function closeMj(){ $("modal-mj").classList.remove("show"); $("mj-input").blur(); }
+function tryMj(){
+  var v = $("mj-input").value.trim().toUpperCase();
+  if (AURORA.djb2(AURORA.SEED + "|" + v) === AURORA.H_MJ){ closeMj(); AURORA.sfx("succes", 0.45); leave(); }
+  else { AURORA.sfx("erreur", 0.45); $("mj-err").textContent = "Autorisation refusée — tentative journalisée"; }
+}
+$("mj-cancel").addEventListener("click", closeMj);
+$("mj-ok").addEventListener("click", tryMj);
+$("mj-input").addEventListener("keydown", function(e){ if (e.key === "Enter") tryMj(); else if (e.key === "Escape") closeMj(); });
+var keyBuf = "";
+document.addEventListener("keydown", function(e){
+  if ($("modal-mj").classList.contains("show") || typing()) return;
+  keyBuf = (keyBuf + (e.key || "")).slice(-2).toLowerCase();
+  if (keyBuf === "mj"){ keyBuf = ""; openMj(); }
+});
+$("skip-std").addEventListener("click", leave);
+window.__aurora = { leave: leave, recalStart: recalStart, startMeters: startMeters, G: G, setTalk: setTalk, project: project, addPos: addPos, WALKAT: function(x,y){ return WALK ? WALK[cell(x,y)] : -1; }, toLatLng: toLatLng, baseXY: baseXY };
 })();
 </script>
 </body>

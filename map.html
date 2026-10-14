@@ -260,7 +260,7 @@
         <div class="conf-sub">Le délai d'accès est écoulé. Ce plan redevient confidentiel —
         niveau de clearance insuffisant pour un nouvel examen. Les 5 sources lumineuses
         restent localisables sur le terrain.</div>
-        <div class="conf-auto">Verrouillage du protocole d'annihilation dans <span id="auto-count">01:00</span></div>
+        <div class="conf-auto">Ouverture du canal de guidage dans <span id="auto-count">01:00</span></div>
         <div class="map-hint">Retour au point de rassemblement</div>
       </div>
     </div>
@@ -280,7 +280,7 @@
   <footer id="botbar">
     <div class="hud-left">
       <span>RÉSEAU AURORA // ACCÈS RESTREINT</span>
-      <span id="stage-label">PHASE 03/05 — RECONNAISSANCE</span>
+      <span id="stage-label">PHASE 03/06 — RECONNAISSANCE</span>
     </div>
     <div class="hud-left">
       <span>SECTEUR FECAMP — NUIT DU 14.10</span>
@@ -308,12 +308,12 @@
 <div id="scanlines"></div>
 <div class="vignette"></div>
 
-<script src="assets/core.js?v=5"></script>
+<script src="assets/core.js?v=6"></script>
 <script>
 (function(){
 "use strict";
 AURORA.boot("map");
-AURORA.prefetch(["code.html", "assets/succes.mp3", "assets/erreur.mp3"]);
+AURORA.prefetch(["standard.html", "assets/succes.mp3", "assets/erreur.mp3"]);
 AURORA.sfxPreload(["bip","succes","erreur"]);
 
 /* ═══════════ CONFIG ═══════════ */
@@ -376,7 +376,7 @@ function lockMap(){
   var autoTick = setInterval(upd, 500);
   setTimeout(function(){
     clearInterval(autoTick);
-    AURORA.goPage({ url:"code.html", stage:"code", fx:"static" });
+    AURORA.goPage({ url:"standard.html", stage:"standard", fx:"static" });
   }, AUTO_CODE_MS);
 }
 
@@ -405,7 +405,7 @@ function tryMj(){
   if (AURORA.djb2(AURORA.SEED + "|" + v) === AURORA.H_MJ){
     closeMj();
     AURORA.sfx("succes", 0.45);
-    AURORA.goPage({ url:"code.html", stage:"code", fx:"static" });
+    AURORA.goPage({ url:"standard.html", stage:"standard", fx:"static" });
   } else {
     AURORA.sfx("erreur", 0.45);
     document.getElementById("mj-err").textContent = "Autorisation refusée — tentative journalisée";
@@ -422,7 +422,7 @@ document.addEventListener("keydown", function(e){
 
 /* debug */
 document.getElementById("skip-map").addEventListener("click", function(){
-  AURORA.goPage({ url:"code.html", stage:"code", fx:"static" });
+  AURORA.goPage({ url:"standard.html", stage:"standard", fx:"static" });
 });
 
 })();

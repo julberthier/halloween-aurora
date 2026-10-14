@@ -12,11 +12,12 @@ var AURORA = {
   H_CODE: 4254224195,                      /* empreinte(code 15 chiffres + mot secret) */
   H_MJ: 2907609231,                        /* empreinte(mot de passe MJ) */
   STAGE_LABELS: {
-    alert:    "PHASE 01/05 — VEILLE",
-    video:    "PHASE 02/05 — TRANSMISSION",
-    map:      "PHASE 03/05 — RECONNAISSANCE",
-    code:     "PHASE 04/05 — AUTHENTIFICATION",
-    finale:   "PHASE 05/05 — SINGULARITÉ"
+    alert:    "PHASE 01/06 — VEILLE",
+    video:    "PHASE 02/06 — TRANSMISSION",
+    map:      "PHASE 03/06 — RECONNAISSANCE",
+    standard: "PHASE 04/06 — GUIDAGE",
+    code:     "PHASE 05/06 — AUTHENTIFICATION",
+    finale:   "PHASE 06/06 — SINGULARITÉ"
   },
   FX_MS: { blast: 470, static: 500, iris: 580, implode: 1560, none: 0 }
 };

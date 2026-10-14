@@ -46,13 +46,13 @@ body{display:flex;align-items:center;justify-content:center}
 <div id="scanlines"></div>
 <div class="vignette"></div>
 
-<script src="assets/core.js?v=5"></script>
+<script src="assets/core.js?v=6"></script>
 <script>
 (function(){
 "use strict";
 AURORA.prefetch(["alert.html"]);
 /* routeur : renvoie vers la phase mémorisée, sinon phase 01 */
-var PAGES = { alert:"alert.html", video:"video.html", map:"map.html", code:"code.html", finale:"finale.html" };
+var PAGES = { alert:"alert.html", video:"video.html", map:"map.html", standard:"standard.html", code:"code.html", finale:"finale.html" };
 var query = location.search;
 var debug = /[?&]debug=1/.test(query);
 function go(p){ location.replace(PAGES[p] + (debug ? "?debug=1" : "")); }
