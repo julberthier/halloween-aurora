@@ -51,7 +51,7 @@ body.alert .tb .ic{background:var(--red);animation:blink 1.4s steps(2) infinite}
 /* journal */
 #log{position:absolute;inset:0;padding:.6vh .6vw;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;font-size:.68vw;line-height:1.55;
   -webkit-mask-image:linear-gradient(180deg,transparent,#000 22%);mask-image:linear-gradient(180deg,transparent,#000 22%)}
-#log div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9fc3d8}
+#log div{flex:0 0 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9fc3d8}
 #log div .ts{color:var(--dim)}
 #log div.ok b{color:var(--blue);font-weight:400}
 #log div.wr{color:#fff}
@@ -219,6 +219,15 @@ function log(cls, txt){
   while (logEl.children.length > 60) logEl.removeChild(logEl.firstChild);
   setTimeout(function(){ d.classList.remove("new"); }, 600);
 }
+/* journal déjà rempli à l'ouverture : une machine qui tourne depuis des heures */
+(function(){
+  var t = Date.now() - 22 * 60000;
+  for (var i = 0; i < 26; i++){
+    var e = pick(CALM), d = document.createElement("div"); t += 40000 + rnd() * 20000;
+    d.className = e[0] || ""; d.innerHTML = '<span class="ts">' + hms(new Date(t)) + '</span>  ' + fill(e[1]);
+    logEl.appendChild(d);
+  }
+})();
 (function loop(){
   var e = ALERT && rnd() < .8 ? pick(HOT) : pick(CALM);
   log(e[0], fill(e[1]));
@@ -428,7 +437,7 @@ var gaC = cv("gauge"), gac = gaC.getContext("2d"), spC = cv("spec"), spc = spC.g
 var LV = ["VEILLE","VIGILANCE","ALERTE","CRITIQUE","CONFINEMENT ROMPU"];
 function drawGauge(dt, t){
   var W = gaC.width, H = gaC.height, c = gac; if (W < 20) return;
-  var tgt = ALERT ? Math.min(5, 2.4 + (now() - tAlert) / 45000) + Math.sin(t / 900) * .12 : 1.15 + Math.sin(t / 3000) * .1;
+  var tgt = ALERT ? Math.min(4.85, 3.2 + (now() - tAlert) / 60000) + Math.sin(t / 900) * .12 : 1.15 + Math.sin(t / 3000) * .1;   /* alerte : niveau 3 tout de suite, 4 après ~1 min, 5 après ~2 min */
   lvl += (tgt - lvl) * Math.min(1, dt / 900);
   c.clearRect(0,0,W,H);
   var cx = W / 2, cy = H * .92, R = Math.min(W * .42, H * .8);
