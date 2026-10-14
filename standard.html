@@ -502,12 +502,6 @@ function tryMj(){
 $("mj-cancel").addEventListener("click", closeMj);
 $("mj-ok").addEventListener("click", tryMj);
 $("mj-input").addEventListener("keydown", function(e){ if (e.key === "Enter") tryMj(); else if (e.key === "Escape") closeMj(); });
-var keyBuf = "";
-document.addEventListener("keydown", function(e){
-  if ($("modal-mj").classList.contains("show") || typing()) return;
-  keyBuf = (keyBuf + (e.key || "")).slice(-2).toLowerCase();
-  if (keyBuf === "mj"){ keyBuf = ""; openMj(); }
-});
 $("skip-std").addEventListener("click", leave);
 window.__aurora = { leave: leave, recalStart: recalStart, startMeters: startMeters, G: G, setTalk: setTalk, project: project, addPos: addPos, WALKAT: function(x,y){ return WALK ? WALK[cell(x,y)] : -1; }, toLatLng: toLatLng, baseXY: baseXY };
 })();
