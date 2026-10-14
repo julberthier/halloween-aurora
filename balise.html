@@ -2,196 +2,201 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>AURORA // BALISE</title>
 <style>
-:root{--bg:#01040a;--ink:#eaf6ff;--blue:#00c8ff;--blue-soft:#7fd4ff;--red:#ff1e3c}
+:root{--bg:#01040a;--ink:#eaf6ff;--blue:#00c8ff;--soft:#7fd4ff;--dim:#4d7f9e;--red:#ff1e3c}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
-  font-family:'Share Tech Mono','Consolas',monospace;user-select:none}
-#app{height:100dvh;display:flex;flex-direction:column}
-/* ── barre d'état ── */
-#bar{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;
-  padding:8px 14px;border-bottom:1px solid rgba(0,200,255,.3);
-  font-size:12px;letter-spacing:.15em;color:var(--blue-soft);text-transform:uppercase}
-#grp{color:var(--white);font-weight:700}
-#net{padding:3px 10px;border:1px solid rgba(0,200,255,.4);border-radius:3px}
+  font-family:'Share Tech Mono','Consolas',monospace;user-select:none;-webkit-user-select:none}
+#app{height:100dvh;display:none;flex-direction:column}
+#bar{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:8px 12px;
+  border-bottom:1px solid rgba(0,200,255,.3);font-size:13px;letter-spacing:.15em;text-transform:uppercase;color:var(--soft)}
+#grp{color:#fff;font-weight:700}
+#net{padding:2px 9px;border:1px solid rgba(255,30,60,.5);border-radius:3px;color:var(--red);font-size:11px}
 #net.ok{color:#00ff6a;border-color:rgba(0,255,106,.5)}
-#net.ko{color:var(--red);border-color:rgba(255,30,60,.5);animation:bl 1s steps(2) infinite}
-@keyframes bl{50%{opacity:.3}}
-/* ── zone principale ── */
-#main{flex:1 1 auto;position:relative;min-height:0;display:flex;flex-direction:column}
-/* vidéo framatalk intégrée */
-#ft{flex:1 1 auto;min-height:0;position:relative;background:#000;border-bottom:1px solid rgba(0,200,255,.25)}
-#ft iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-/* bandeau bas : identité + contrôles */
-#foot{flex:0 0 auto;padding:10px 14px;display:flex;gap:10px;align-items:center;
-  border-top:1px solid rgba(0,200,255,.3)}
-#status{flex:1;font-size:11px;letter-spacing:.1em;color:#4d7f9e;text-transform:uppercase;line-height:1.6}
-#status b{color:var(--blue)}
-.btn{background:rgba(0,200,255,.12);border:1px solid rgba(0,200,255,.6);color:var(--blue-soft);
-  padding:12px 18px;font-size:13px;letter-spacing:.2em;text-transform:uppercase;border-radius:4px}
+#cam{flex:1 1 auto;position:relative;min-height:0;background:#000}
+#cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#voice{position:absolute;left:0;right:0;top:0;z-index:3;padding:10px;text-align:center;font-size:14px;letter-spacing:.25em;
+  background:rgba(255,30,60,.85);color:#fff;display:none}
+#voice.on{display:block}
+#rows{flex:0 0 auto;padding:10px 12px;border-top:1px solid rgba(0,200,255,.3);font-size:12px;letter-spacing:.08em;line-height:1.9;text-transform:uppercase;color:var(--dim)}
+#rows b{color:var(--blue);font-weight:400}
+#rows b.ko{color:var(--red)}
+#act{flex:0 0 auto;display:flex;gap:8px;padding:0 12px 12px}
+.btn{flex:1;background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.55);color:#fff;padding:13px 8px;
+  font:700 12px 'Share Tech Mono',monospace;letter-spacing:.15em;border-radius:5px}
 .btn:active{background:rgba(0,200,255,.35)}
-#mute-ind{position:absolute;top:10px;right:10px;z-index:5;background:rgba(255,30,60,.85);color:#fff;
-  font-size:10px;letter-spacing:.2em;padding:4px 10px;border-radius:3px;display:none}
-/* ── écran de sélection du groupe ── */
-#pick{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:22px;padding:24px}
-#pick h1{font-size:17px;letter-spacing:.35em;color:var(--white);text-transform:uppercase;text-align:center}
-#pick p{font-size:12px;color:#4d7f9e;letter-spacing:.15em;text-transform:uppercase;text-align:center}
-#groups{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.gbtn{width:88px;height:88px;border:1px solid rgba(0,200,255,.5);border-radius:6px;
-  background:rgba(0,200,255,.07);color:var(--white);font-size:24px;font-weight:700;
-  font-family:'Share Tech Mono',monospace}
-.gbtn small{display:block;font-size:9px;color:#4d7f9e;letter-spacing:.15em;margin-top:4px}
-.gbtn:active{background:rgba(0,200,255,.3)}
-.hidden{display:none !important}
-/* volume écoute */
-#vol{position:absolute;bottom:10px;left:10px;z-index:5;display:flex;gap:8px;align-items:center}
-#vol .btn{padding:8px 14px;font-size:11px}
+#pick{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:22px;text-align:center}
+#pick h1{font-size:18px;letter-spacing:.35em;color:#fff}
+#pick p{font-size:12px;color:var(--dim);letter-spacing:.1em;line-height:1.8;max-width:420px}
+#groups{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g{width:86px;height:86px;border:1px solid rgba(0,200,255,.5);border-radius:6px;background:rgba(0,200,255,.07);color:#fff;font:700 24px 'Share Tech Mono',monospace}
+.g small{display:block;font-size:9px;font-weight:400;color:var(--dim);letter-spacing:.15em;margin-top:4px}
+.g:active{background:rgba(0,200,255,.3)}
+#perr{color:var(--red);font-size:12px;min-height:1em;max-width:420px;line-height:1.6}
 </style>
 </head>
 <body>
 <div id="pick">
   <h1>AURORA // BALISE</h1>
-  <p>Sélectionner le groupe accompagné</p>
+  <p>Accompagnateur : choisissez le groupe que vous escortez.<br>Autorisez la <b style="color:#fff">caméra</b> et la <b style="color:#fff">position</b>. Gardez le téléphone en main, caméra vers l'avant, volume au maximum.</p>
   <div id="groups"></div>
-  <p style="margin-top:8px;max-width:420px;line-height:1.8;letter-spacing:.08em;text-transform:none">
-    Écran verrouillé pendant la mission · caméra active · position transmise</p>
+  <div id="perr"></div>
 </div>
-
-<div id="app" class="hidden">
-  <div id="bar">
-    <span>GROUPE <span id="grp">—</span></span>
-    <span id="net" class="ko">HORS LIGNE</span>
+<div id="app">
+  <div id="bar"><span>BALISE <span id="grp">—</span></span><span id="net">HORS LIGNE</span></div>
+  <div id="cam"><video id="me" autoplay muted playsinline></video><div id="voice">◉ LES GUIDES VOUS PARLENT</div></div>
+  <div id="rows">
+    liaison standard : <b id="r-link" class="ko">recherche…</b><br>
+    vidéo : <b id="r-vid" class="ko">—</b> · position : <b id="r-gps" class="ko">—</b>
   </div>
-  <div id="main">
-    <div id="ft">
-      <div id="mute-ind">SON SALON COUPÉ</div>
-      <div id="vol"><button class="btn" id="vol-up">VOL +</button><button class="btn" id="vol-dn">VOL −</button></div>
-    </div>
-  </div>
-  <div id="foot">
-    <div id="status">balise active — gps <b id="gps">—</b><br>liaison voix : <b id="link">établie au standard</b></div>
-    <button class="btn" id="lock">VERROUILLER</button>
-  </div>
+  <div id="act"><button class="btn" id="b-snd">PAS DE SON ? TOUCHER</button><button class="btn" id="b-cam">CHANGER CAMÉRA</button></div>
 </div>
-
+<audio id="voiceout" autoplay playsinline></audio>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 (function(){
 "use strict";
-/* ═══ CONFIG ═══ */
-var ROOM = "AURORA-MISSION-14";          /* salon framatalk commun */
-var FT_ORIGIN = "https://framatalk.org";
-var qs = /[?&]g=(\d)/.exec(location.search);
+var PREFIX = "jb-aurora14-", STD_ID = PREFIX + "standard";
+var $ = function(id){ return document.getElementById(id); };
+var n = 0, cam = null, silent = null, outStream = null, peer = null, call = null, conn = null;
+var pos = null, facing = "environment", actx = null;
 
-/* ═══ sélection du groupe ═══ */
-var groupsEl = document.getElementById("groups");
-for (var g = 1; g <= 5; g++){
-  (function(n){
-    var b = document.createElement("button");
-    b.className = "gbtn";
-    b.innerHTML = "G" + n + "<small>GROUPE " + n + "</small>";
-    b.addEventListener("click", function(){ boot(n); });
-    groupsEl.appendChild(b);
-  })(g);
+for (var i = 1; i <= 5; i++) (function(g){
+  var b = document.createElement("button"); b.className = "g"; b.innerHTML = "G" + g + "<small>GROUPE " + g + "</small>";
+  b.onclick = function(){ start(g); }; $("groups").appendChild(b);
+})(i);
+
+function setNet(t, ok){ $("net").textContent = t; $("net").className = ok ? "ok" : ""; }
+function row(id, t, ok){ $(id).textContent = t; $(id).className = ok ? "" : "ko"; }
+
+/* piste audio silencieuse : permet de RECEVOIR la voix sans demander le micro */
+function silentTrack(){
+  actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+  var o = actx.createOscillator(), gn = actx.createGain(), d = actx.createMediaStreamDestination();
+  gn.gain.value = 0; o.connect(gn); gn.connect(d); o.start();
+  return d.stream.getAudioTracks()[0];
 }
-/* paramètre d'URL direct : balise.html?g=3 */
-if (qs){ boot(parseInt(qs[1], 10)); }
+function getCam(){
+  return navigator.mediaDevices.getUserMedia({ audio: false, video: {
+    facingMode: { ideal: facing }, width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 15, max: 20 } } });
+}
+function buildOut(){
+  outStream = new MediaStream();
+  cam.getVideoTracks().forEach(function(t){ outStream.addTrack(t); });
+  if (silent) outStream.addTrack(silent);
+}
 
-function boot(n){
-  document.getElementById("pick").classList.add("hidden");
-  document.getElementById("app").classList.remove("hidden");
-  document.getElementById("grp").textContent = "G" + n;
-  var MY_ID = "balise-g" + n;
-  var STD_ID = "standard-aurora";        /* identité du standard (salle principale) */
-
-  /* ═══ 1. FRAMATALK en iframe : caméra ON, micro OFF, son salon OFF ═══ */
-  var iframe = document.createElement("iframe");
-  iframe.allow = "camera; microphone; autoplay; fullscreen";
-  iframe.src = FT_ORIGIN + "/" + ROOM + "#userInfo.displayName=BALISE%20G" + n +
-    "&config.startWithVideoMuted=false&config.startWithAudioMuted=false&config.startScreenSharing=false";
-  document.getElementById("ft").appendChild(iframe);
-  /* le son du salon est contrôlé côté standard : ici on force muet dès que possible */
-  try{
-    var post = function(){ iframe.contentWindow.postMessage({ type:"setAudioOutputVolume", value: 0 }, FT_ORIGIN); };
-    setTimeout(post, 4000); setTimeout(post, 8000); setTimeout(post, 15000);
-  }catch(e){}
-  document.getElementById("mute-ind").style.display = "block";
-
-  /* ═══ 2. GPS : envoi de position ═══ */
-  var lastPos = null, watchId = null;
-  var netEl = document.getElementById("net");
-  var gpsEl = document.getElementById("gps");
-  function netOk(v){ netEl.className = v ? "ok" : "ko"; netEl.textContent = v ? "EN LIGNE" : "HORS LIGNE"; }
-
-  /* ═══ 3. PeerJS : la voix arrive du standard ═══ */
-  var peer = null, conn = null, audioEl = null, audioCtx = null;
-  var linkEl = document.getElementById("link");
-  function startPeer(){
-    peer = new Peer(MY_ID, { debug: 0 });
-    peer.on("open", function(){
-      netOk(true);
-      conn = peer.connect(STD_ID, { reliable: false });
-      conn.on("open", function(){ linkEl.textContent = "établie"; sendState(); });
-      conn.on("close", function(){ linkEl.textContent = "perdue — reconnexion…"; setTimeout(startPeer, 1500); });
-    });
-    peer.on("connection", function(c){ conn = c; });
-    /* appel vocal entrant : le standard appelle, la voix sort au haut-parleur */
-    peer.on("call", function(call){
-      call.answer();                       /* on répond sans micro (réception seule) */
-      call.on("stream", function(stream){
-        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-        audioEl = audioEl || new Audio();
-        audioEl.srcObject = stream;
-        audioEl.volume = 1;
-        audioEl.play().catch(function(){});
-        /* iOS : l'AudioContext doit être débloqué par un geste */
-        document.getElementById("vol-up").addEventListener("click", function(){
-          if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
-          audioEl.play().catch(function(){});
-        });
-      });
-    });
-    peer.on("error", function(e){
-      if (e && e.type === "peer-unavailable"){ /* standard pas encore ouvert : réessai */ 
-        setTimeout(function(){ if (!conn || !conn.open) startPeer(); }, 2500);
-      } else { netOk(false); setTimeout(startPeer, 3000); }
-    });
-  }
-  function sendState(){
-    if (!conn || !conn.open) return;
-    try{ conn.send({ t:"state", g:n, pos:lastPos, ts:Date.now() }); }catch(e){}
-  }
-
-  /* GPS */
-  if (navigator.geolocation){
-    watchId = navigator.geolocation.watchPosition(function(p){
-      lastPos = { lat:p.coords.latitude, lng:p.coords.longitude, acc:Math.round(p.coords.accuracy), ts:Date.now() };
-      gpsEl.textContent = "±" + lastPos.acc + " m";
-      sendState();
-    }, function(){ gpsEl.textContent = "indisponible"; }, { enableHighAccuracy:true, maximumAge:1000, timeout:8000 });
-  }
-  /* battement de cœur toutes les 5 s (position ou simple présence) */
-  setInterval(sendState, 5000);
-  window.addEventListener("online", function(){ netOk(true); });
-  window.addEventListener("offline", function(){ netOk(false); });
-
-  /* ═══ volume haut-parleur (guidage) ═══ */
-  var vol = 0.9;
-  document.getElementById("vol-up").addEventListener("click", function(){ vol = Math.min(1, vol + .15); if (audioEl) audioEl.volume = vol; });
-  document.getElementById("vol-dn").addEventListener("click", function(){ vol = Math.max(0, vol - .15); if (audioEl) audioEl.volume = vol; });
-
-  /* ═══ verrouillage d'écran impossible : garder l'écran allumé autant que possible ═══ */
-  var wl = null;
-  document.getElementById("lock").addEventListener("click", function(){
-    if (navigator.wakeLock && !wl){ navigator.wakeLock.request("screen").then(function(l){ wl = l; document.getElementById("lock").textContent = "ÉCRAN VEILLÉ OK"; }); }
-    else { document.getElementById("lock").textContent = "ÉCRAN VEILLÉ"; }
+function start(g){
+  $("perr").textContent = "";
+  n = g;
+  try { silent = silentTrack(); actx.resume(); } catch(e){}
+  try { $("voiceout").play().catch(function(){}); } catch(e){}
+  getCam().then(function(s){
+    cam = s; $("me").srcObject = s; buildOut();
+    $("pick").style.display = "none"; $("app").style.display = "flex"; $("grp").textContent = "G" + n;
+    row("r-vid", "caméra active", true);
+    history.replaceState(null, "", "?g=" + n);
+    wake(); gps(); startPeer();
+  }).catch(function(e){
+    $("perr").textContent = "CAMÉRA REFUSÉE — autorisez la caméra dans les réglages du navigateur puis réessayez (" + (e && e.name) + ")";
   });
-
-  startPeer();
 }
+
+function wake(){
+  if (!("wakeLock" in navigator)) return;
+  navigator.wakeLock.request("screen").catch(function(){});
+}
+document.addEventListener("visibilitychange", function(){ if (document.visibilityState === "visible" && n){ wake(); if (actx) actx.resume(); } });
+
+function gps(){
+  if (!navigator.geolocation){ row("r-gps", "indisponible", false); return; }
+  navigator.geolocation.watchPosition(function(p){
+    pos = { lat: p.coords.latitude, lng: p.coords.longitude, acc: Math.round(p.coords.accuracy) };
+    row("r-gps", "±" + pos.acc + " m", pos.acc <= 30);
+    send();
+  }, function(e){ row("r-gps", e.code === 1 ? "refusée" : "recherche…", false); },
+  { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
+}
+function send(){ if (conn && conn.open){ try { conn.send({ t: "state", g: n, pos: pos }); } catch(e){} } }
+setInterval(send, 2000);
+
+function startPeer(){
+  setNet("CONNEXION…", false);
+  peer = new Peer(PREFIX + "g" + n + "-" + Math.random().toString(36).slice(2, 7), { debug: 1 });
+  peer.on("open", function(){ setNet("EN LIGNE", true); dial(); });
+  peer.on("disconnected", function(){ setNet("RECONNEXION…", false); setTimeout(function(){ try { peer.reconnect(); } catch(e){} }, 1500); });
+  peer.on("error", function(e){
+    if (e.type === "peer-unavailable") row("r-link", "standard non ouvert — nouvel essai…", false);
+    else if (/network|server|socket/.test(e.type)) setNet("RÉSEAU…", false);
+  });
+}
+function dial(){
+  if (!peer || peer.destroyed || !peer.open) return;
+  if (!conn || !conn.open){
+    try { if (conn) conn.close(); } catch(e){}
+    conn = peer.connect(STD_ID, { metadata: { g: n }, reliable: true });
+    conn.on("open", function(){ send(); });
+    conn.on("data", function(d){ if (d && d.t === "talk") $("voice").classList.toggle("on", !!d.on); });
+    conn.on("close", function(){ $("voice").classList.remove("on"); });
+  }
+  if (!call || !call.open){
+    try { if (call) call.close(); } catch(e){}
+    call = peer.call(STD_ID, outStream, { metadata: { g: n } });
+    if (!call) return;
+    call.on("stream", function(rs){
+      var a = $("voiceout"); a.srcObject = rs; a.volume = 1; a.play().catch(function(){});
+      row("r-link", "établie — voix et vidéo", true);
+    });
+    call.on("close", function(){ row("r-link", "perdue — reconnexion…", false); });
+    call.on("error", function(){});
+    setTimeout(capBitrate, 2500);
+  }
+}
+/* débit limité : 5 vidéos doivent passer sur le même wifi */
+function capBitrate(){
+  try {
+    call.peerConnection.getSenders().forEach(function(s){
+      if (!s.track || s.track.kind !== "video") return;
+      var p = s.getParameters(); if (!p.encodings || !p.encodings.length) p.encodings = [{}];
+      p.encodings[0].maxBitrate = 380000; p.encodings[0].maxFramerate = 15;
+      s.setParameters(p).catch(function(){});
+    });
+  } catch(e){}
+}
+/* surveillance : rappelle le standard tant que la liaison n'est pas complète */
+setInterval(function(){
+  if (!n || !peer) return;
+  if (peer.destroyed){ startPeer(); return; }
+  var st = call && call.peerConnection ? call.peerConnection.connectionState : "none";
+  if (!call || !call.open || st === "failed" || st === "closed" || !conn || !conn.open) dial();
+}, 3000);
+
+$("b-snd").onclick = function(){
+  if (actx) actx.resume();
+  var a = $("voiceout"); a.muted = false; a.volume = 1; a.play().catch(function(){});
+  var b = this; b.textContent = "SON RÉACTIVÉ"; setTimeout(function(){ b.textContent = "PAS DE SON ? TOUCHER"; }, 1500);
+};
+$("b-cam").onclick = function(){
+  facing = facing === "environment" ? "user" : "environment";
+  getCam().then(function(s){
+    var nt = s.getVideoTracks()[0];
+    if (call && call.peerConnection) call.peerConnection.getSenders().forEach(function(se){ if (se.track && se.track.kind === "video") se.replaceTrack(nt); });
+    cam.getTracks().forEach(function(t){ t.stop(); });
+    cam = s; $("me").srcObject = s; buildOut();
+  }).catch(function(){});
+};
+
+var q = /[?&]g=([1-5])/.exec(location.search);
+if (q){
+  /* lien direct : un toucher reste nécessaire pour la caméra et le son */
+  $("groups").innerHTML = "";
+  var b = document.createElement("button"); b.className = "g"; b.style.width = "200px";
+  b.innerHTML = "DÉMARRER<small>BALISE G" + q[1] + "</small>"; b.onclick = function(){ start(+q[1]); };
+  $("groups").appendChild(b);
+}
+window.__balise = { get call(){ return call; }, get conn(){ return conn; } };
 })();
 </script>
 </body>

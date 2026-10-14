@@ -5,259 +5,321 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AURORA // STANDARD</title>
 <style>
-:root{--bg:#01040a;--ink:#eaf6ff;--blue:#00c8ff;--blue-soft:#7fd4ff;--red:#ff1e3c}
+:root{--bg:#01040a;--ink:#eaf6ff;--blue:#00c8ff;--soft:#7fd4ff;--dim:#4d7f9e;--red:#ff1e3c}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
-  font-family:'Share Tech Mono','Consolas',monospace;user-select:none}
+  font-family:'Share Tech Mono','Consolas',monospace;user-select:none;-webkit-user-select:none}
 #app{height:100dvh;display:flex;flex-direction:column}
-/* ── barre haut ── */
-#bar{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;
-  padding:8px 14px;border-bottom:1px solid rgba(0,200,255,.3);
-  font-size:12px;letter-spacing:.2em;color:var(--blue-soft);text-transform:uppercase}
-#bar .r{color:#4d7f9e}
-/* ── corps : mosaïque gauche, carte droite ── */
+#bar{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:7px 14px;border-bottom:1px solid rgba(0,200,255,.3);font-size:12px;letter-spacing:.2em;color:var(--soft);text-transform:uppercase}
+#net{padding:2px 10px;border:1px solid rgba(255,30,60,.5);border-radius:3px;color:var(--red)}
+#net.ok{color:#00ff6a;border-color:rgba(0,255,106,.5)}
+#clock{color:var(--dim)}
 #body{flex:1 1 auto;display:flex;min-height:0}
-#mosaic{flex:1 1 55%;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;
-  gap:4px;padding:4px;background:#000;min-width:0}
-.cell{position:relative;background:#020810;border:1px solid rgba(0,200,255,.2);min-height:0;overflow:hidden}
-.cell .tag{position:absolute;top:6px;left:8px;z-index:3;font-size:11px;letter-spacing:.2em;
-  color:var(--blue);background:rgba(1,4,10,.7);padding:2px 8px;border-radius:3px}
-.cell .gps{position:absolute;bottom:6px;left:8px;z-index:3;font-size:10px;color:#4d7f9e;
-  background:rgba(1,4,10,.7);padding:2px 8px;border-radius:3px}
-.cell iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.cell .off{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  color:#123;font-size:12px;letter-spacing:.25em}
-/* carte */
-#mapside{flex:1 1 45%;display:flex;flex-direction:column;border-left:1px solid rgba(0,200,255,.3);min-width:0}
-#mapwrap{flex:1 1 auto;position:relative;min-height:0;background:#01040a;padding:8px}
+#mosaic{flex:1 1 56%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4px;padding:4px;background:#000;min-width:0}
+.cell{position:relative;background:#020810;border:1px solid rgba(0,200,255,.22);min-height:0;overflow:hidden}
+.cell.talk{border-color:var(--red);box-shadow:inset 0 0 0 2px var(--red)}
+.cell video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+.cell .tag{position:absolute;top:6px;left:8px;z-index:3;font-size:12px;letter-spacing:.2em;color:var(--blue);background:rgba(1,4,10,.75);padding:2px 8px;border-radius:3px}
+.cell .meta{position:absolute;bottom:6px;left:8px;z-index:3;font-size:10px;color:var(--soft);background:rgba(1,4,10,.75);padding:2px 8px;border-radius:3px}
+.cell .ov{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:11px;letter-spacing:.25em;color:var(--dim);background:rgba(1,4,10,.6);padding:10px}
+.cell .ov.lost{color:var(--red);animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{opacity:.35}}
+#mapcell{grid-column:3;grid-row:2}
+#mapside{flex:1 1 44%;display:flex;flex-direction:column;border-left:1px solid rgba(0,200,255,.3);min-width:0}
+#mapwrap{flex:1 1 auto;position:relative;min-height:0;padding:8px}
 #mapwrap svg{width:100%;height:100%;display:block}
-.blip{fill:var(--white);stroke:var(--blue);stroke-width:1.5}
-.blip-label{fill:var(--blue-soft);font-family:'Share Tech Mono',monospace;font-size:15px;letter-spacing:2px}
-.blip-ring{fill:none;stroke:var(--blue);opacity:.5}
-#maplegend{flex:0 0 auto;padding:6px 12px;font-size:10px;color:#4d7f9e;letter-spacing:.15em;text-transform:uppercase;
-  border-top:1px solid rgba(0,200,255,.2)}
-/* ── barre bas : push to talk ── */
-#ptt{flex:0 0 auto;display:flex;gap:8px;padding:10px 12px;border-top:1px solid rgba(0,200,255,.3);align-items:center}
-.sel{width:56px;height:56px;border:1px solid rgba(0,200,255,.5);border-radius:6px;background:rgba(0,200,255,.07);
-  color:var(--white);font-size:20px;font-weight:700;font-family:'Share Tech Mono',monospace}
-.sel.active{background:var(--blue);color:#01040a;box-shadow:0 0 18px rgba(0,200,255,.6)}
-#talk{flex:1;height:56px;border:1px solid rgba(255,30,60,.6);border-radius:6px;background:rgba(255,30,60,.1);
-  color:#fff;font-size:15px;letter-spacing:.3em;text-transform:uppercase}
-#talk.on{background:var(--red);box-shadow:0 0 24px rgba(255,30,60,.7)}
-#talk small{display:block;font-size:9px;letter-spacing:.2em;color:#ffb0bd}
-#talk.on small{color:#fff}
-#micstate{font-size:10px;color:#4d7f9e;text-transform:uppercase;letter-spacing:.15em;writing-mode:vertical-rl;transform:rotate(180deg)}
+.blip{fill:#fff;stroke:var(--blue);stroke-width:2}
+.blip.stale{fill:#555;stroke:var(--red)}
+.ring{fill:rgba(0,200,255,.08);stroke:rgba(0,200,255,.5);stroke-width:1}
+.blbl{fill:var(--soft);font-family:'Share Tech Mono',monospace;font-size:17px;letter-spacing:2px;paint-order:stroke;stroke:#01040a;stroke-width:4px}
+.calpt{fill:none;stroke:#00ff6a;stroke-width:2}
+#legend{flex:0 0 auto;padding:5px 12px;font-size:10px;color:var(--dim);letter-spacing:.15em;text-transform:uppercase;border-top:1px solid rgba(0,200,255,.2)}
+#cal{display:none;flex:0 0 auto;padding:8px 12px;border-top:1px solid rgba(0,255,106,.4);font-size:11px;color:#9fe;line-height:1.6}
+#cal.on{display:block}
+#cal b{color:#00ff6a}
+#cal button{background:rgba(0,255,106,.1);border:1px solid rgba(0,255,106,.5);color:#bfe;padding:4px 10px;margin:4px 6px 0 0;font:inherit;border-radius:3px}
+#cal button.sel{background:#00ff6a;color:#000}
+#cal textarea{width:100%;height:42px;margin-top:6px;background:#000;color:#9fe;border:1px solid #234;font:10px monospace}
+#ptt{flex:0 0 auto;display:flex;gap:8px;padding:9px 12px;border-top:1px solid rgba(0,200,255,.3);align-items:stretch}
+.pt{flex:1;min-height:64px;border:1px solid rgba(0,200,255,.5);border-radius:6px;background:rgba(0,200,255,.07);color:#fff;
+  font:700 20px 'Share Tech Mono',monospace;letter-spacing:.1em;touch-action:none}
+.pt small{display:block;font-size:9px;font-weight:400;letter-spacing:.15em;color:var(--dim);margin-top:3px}
+.pt.on{background:var(--red);border-color:var(--red);box-shadow:0 0 22px rgba(255,30,60,.7)}
+.pt.on small{color:#fff}
+.pt.off{opacity:.35}
+.pt.all{flex:.8;border-color:rgba(255,30,60,.5);font-size:15px}
+#gate{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px;text-align:center}
+#gate h1{font-size:18px;letter-spacing:.35em;color:#fff}
+#gate p{font-size:12px;color:var(--dim);letter-spacing:.1em;max-width:520px;line-height:1.8}
+#gate button{background:rgba(0,200,255,.12);border:1px solid var(--blue);color:#fff;padding:16px 28px;font:700 15px 'Share Tech Mono',monospace;letter-spacing:.25em;border-radius:6px}
+#gerr{color:var(--red);font-size:12px;min-height:1em}
 </style>
 </head>
 <body>
+<div id="gate">
+  <h1>AURORA // STANDARD</h1>
+  <p>Poste central de guidage. Ouvrir CETTE page en premier, puis les cinq balises.<br>Le micro de cet appareil sera transmis au groupe choisi, uniquement pendant l'appui sur son bouton.</p>
+  <button id="go">ACTIVER LE STANDARD</button>
+  <div id="gerr"></div>
+</div>
 <div id="app">
-  <div id="bar">
-    <span>AURORA // STANDARD — SECTEUR FECAMP</span>
-    <span class="r" id="clock">--:--:--</span>
-  </div>
+  <div id="bar"><span>AURORA // STANDARD — SECTEUR FÉCAMP</span><span id="net">HORS LIGNE</span><span id="clock">--:--:--</span></div>
   <div id="body">
     <div id="mosaic"></div>
     <div id="mapside">
       <div id="mapwrap"></div>
-      <div id="maplegend">POSITIONS GPS · PRÉCISION 5-15 M · ACTUALISATION CONTINUE</div>
+      <div id="cal"></div>
+      <div id="legend">POSITIONS GPS LISSÉES · PRÉCISION 5-15 M</div>
     </div>
   </div>
-  <div id="ptt">
-    <button class="sel" data-g="1">G1</button>
-    <button class="sel" data-g="2">G2</button>
-    <button class="sel" data-g="3">G3</button>
-    <button class="sel" data-g="4">G4</button>
-    <button class="sel" data-g="5">G5</button>
-    <button id="talk"><small>appuyer et parler</small>TRANSMETTRE</button>
-    <span id="micstate">MIC</span>
-  </div>
+  <div id="ptt"></div>
 </div>
-
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 (function(){
 "use strict";
-/* ═══ CONFIG ═══ */
-var ROOM = "AURORA-MISSION-14";
-var FT_ORIGIN = "https://framatalk.org";
-var STD_ID = "standard-aurora";
+var PREFIX = "jb-aurora14-", STD_ID = PREFIX + "standard";
+var NS = "http://www.w3.org/2000/svg";
+var $ = function(id){ return document.getElementById(id); };
+var G = {}; for (var g = 1; g <= 5; g++) G[g] = { hist: [], seen: 0, pos: null, call: null, conn: null, track: null, talk: false };
+var mic = null, peer = null;
 
-/* horloge */
+/* ── horloge ── */
+function pad(n){ return (n < 10 ? "0" : "") + n; }
+setInterval(function(){ var d = new Date(); $("clock").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()); }, 1000);
+function setNet(t, ok){ $("net").textContent = t; $("net").className = ok ? "ok" : ""; }
+
+/* ── mosaïque : 5 vidéos ── */
+for (var i = 1; i <= 5; i++){
+  var c = document.createElement("div"); c.className = "cell"; c.id = "cell-" + i;
+  c.innerHTML = '<video id="v-' + i + '" autoplay muted playsinline></video>' +
+    '<div class="tag">GROUPE ' + i + '</div><div class="meta" id="m-' + i + '">—</div>' +
+    '<div class="ov" id="o-' + i + '">EN ATTENTE DE LA BALISE ' + i + '</div>';
+  $("mosaic").appendChild(c);
+}
+var info = document.createElement("div"); info.className = "cell"; info.id = "mapcell";
+info.innerHTML = '<div class="ov" style="background:none;line-height:2"><div>MAINTENIR LE BOUTON DU GROUPE<br>POUR LUI PARLER<br><span style="color:#ff5468">CLAVIER : TOUCHES 1 À 5 · 0 = TOUS</span></div></div>';
+$("mosaic").appendChild(info);
+
+/* ── carte ── */
+var WALLS = "M0.1 111.8L0.1 123.3M136.7 143.4L136.7 184.2M0.0 111.9L195.4 111.9M195.3 103.8L195.3 112.1M0.0 123.1L195.4 123.1M136.6 143.5L195.4 143.5M195.3 123.0L195.3 143.6M136.6 184.0L195.4 184.0M195.3 184.0L195.3 284.8M195.1 103.8L214.8 103.8M214.7 103.8L214.7 143.6M214.7 184.0L214.7 268.5M195.1 284.7L214.8 284.7M214.7 276.5L214.7 284.8M214.6 143.5L234.3 143.5M234.3 143.4L234.3 147.6M214.6 268.4L253.9 268.4M253.8 264.3L253.8 268.5M214.6 276.6L253.9 276.6M253.8 276.5L253.8 304.2M253.7 264.3L312.4 264.3M253.7 304.0L312.4 304.0M312.3 264.3L312.3 304.2M234.2 147.6L331.9 147.6M331.7 0.0L331.7 147.6M331.7 0.1L351.5 0.1M351.3 0.0L351.3 4.2M351.3 15.3L351.3 35.7M351.3 43.7L351.3 147.6M351.2 4.2L370.9 4.2M351.2 15.4L370.9 15.4M370.8 4.1L370.8 15.5M351.2 43.8L429.4 43.8M351.2 147.6L429.4 147.6M429.3 43.7L429.3 147.6M214.6 184.0L429.4 184.0M429.3 184.0L429.3 231.9M351.2 35.7L448.9 35.7M448.9 0.0L448.9 35.7M448.9 43.7L448.9 147.6M448.9 184.0L448.9 188.2M448.8 0.1L468.5 0.1M448.8 43.8L468.5 43.8M468.4 0.0L468.4 43.9M448.8 188.1L488.0 188.1M429.2 231.8L488.0 231.8M487.8 188.0L487.8 231.9M448.8 184.0L546.5 184.0M546.4 184.0L546.4 248.2M546.4 248.1L566.1 248.1M565.9 184.0L565.9 248.2M448.8 143.5L624.6 143.5M624.5 88.5L624.5 143.6M565.8 184.0L624.6 184.0M624.5 184.0L624.5 219.8M624.3 88.5L644.0 88.5M643.9 88.5L643.9 143.6M643.9 184.0L643.9 204.5M643.8 143.5L663.5 143.5M643.8 184.0L663.5 184.0M663.5 143.4L663.5 184.2M643.8 204.4L702.6 204.4M624.3 219.7L702.6 219.7M702.4 204.3L702.4 219.8";
+$("mapwrap").innerHTML = '<svg id="svg" viewBox="-30 -30 765 365"><path d="' + WALLS +
+  '" fill="none" stroke="rgba(0,200,255,.55)" stroke-width="2.5" stroke-linecap="square"/><g id="calg"></g><g id="blips"></g></svg>';
+var svg = $("svg");
+
+/* projection GPS → plan.
+   Sans calibrage : boîte approximative. Avec calibrage (points relevés sur place) :
+   similitude (échelle + rotation + translation) ajustée aux moindres carrés. */
+var BOUNDS = { lat1: 49.74735, lng1: 0.38690, lat2: 49.74570, lng2: 0.38895 };
+var CALIB_DEFAULT = [];   /* points figés après calibrage sur place */
+var CAL = [];
+try { CAL = JSON.parse(localStorage.getItem("aurora-calib") || "null") || CALIB_DEFAULT.slice(); } catch(e){ CAL = CALIB_DEFAULT.slice(); }
+var T = null, RAD = Math.PI / 180, R = 6371000;
+function toM(lat, lng, ref){ return [(lng - ref.lng) * RAD * R * Math.cos(ref.lat * RAD), (lat - ref.lat) * RAD * R]; }
+function bbox(lat, lng){
+  return { x: (lng - BOUNDS.lng1) / (BOUNDS.lng2 - BOUNDS.lng1) * 702, y: (BOUNDS.lat1 - lat) / (BOUNDS.lat1 - BOUNDS.lat2) * 304 };
+}
+function fit(){
+  if (!CAL.length){ T = null; return; }
+  var ref = CAL[0];
+  var z = CAL.map(function(p){ return toM(p.lat, p.lng, ref); });
+  var w = CAL.map(function(p){ return [p.x, -p.y]; });
+  var n = CAL.length, zm = [0,0], wm = [0,0];
+  for (var k = 0; k < n; k++){ zm[0] += z[k][0]/n; zm[1] += z[k][1]/n; wm[0] += w[k][0]/n; wm[1] += w[k][1]/n; }
+  var a;
+  if (n === 1){
+    /* un seul point : échelle et orientation de la boîte, recalage sur le point */
+    var p0 = bbox(ref.lat, ref.lng), p1 = bbox(ref.lat, ref.lng + 0.0005);
+    var dE = toM(ref.lat, ref.lng + 0.0005, ref)[0];
+    a = [(p1.x - p0.x) / dE, 0];
+  } else {
+    var nr = 0, ni = 0, den = 0;
+    for (k = 0; k < n; k++){
+      var zr = z[k][0] - zm[0], zi = z[k][1] - zm[1], wr = w[k][0] - wm[0], wi = w[k][1] - wm[1];
+      nr += wr * zr + wi * zi; ni += wi * zr - wr * zi; den += zr * zr + zi * zi;
+    }
+    a = den > 0 ? [nr / den, ni / den] : [1, 0];
+  }
+  var b = [wm[0] - (a[0]*zm[0] - a[1]*zm[1]), wm[1] - (a[0]*zm[1] + a[1]*zm[0])];
+  T = { ref: ref, a: a, b: b };
+}
+function project(lat, lng){
+  if (!T) return bbox(lat, lng);
+  var m = toM(lat, lng, T.ref);
+  return { x: T.a[0]*m[0] - T.a[1]*m[1] + T.b[0], y: -(T.a[0]*m[1] + T.a[1]*m[0] + T.b[1]) };
+}
+fit();
+
+/* lissage : moyenne pondérée (1/précision²) des 6 dernières mesures < 20 s */
+function smooth(h){
+  var now = Date.now(), sw = 0, la = 0, ln = 0, acc = 999;
+  h.forEach(function(p){ if (now - p.t > 20000) return; var wt = 1 / Math.max(3, p.acc) / Math.max(3, p.acc); sw += wt; la += p.lat * wt; ln += p.lng * wt; acc = Math.min(acc, p.acc); });
+  return sw ? { lat: la / sw, lng: ln / sw, acc: acc } : null;
+}
+function addPos(g, p){
+  if (!p || typeof p.lat !== "number") return;
+  var h = G[g].hist; h.push({ lat: p.lat, lng: p.lng, acc: p.acc || 30, t: Date.now() });
+  while (h.length > 6) h.shift();
+  G[g].pos = smooth(h);
+  drawBlip(g);
+}
+function el(tag, attrs){ var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+function drawBlip(g){
+  var p = G[g].pos; if (!p) return;
+  var xy = project(p.lat, p.lng);
+  xy.x = Math.max(-25, Math.min(730, xy.x)); xy.y = Math.max(-25, Math.min(330, xy.y));
+  var grp = $("bl-" + g);
+  if (!grp){
+    grp = el("g", { id: "bl-" + g });
+    grp.appendChild(el("circle", { r: 14, "class": "ring" }));
+    grp.appendChild(el("circle", { r: 6, "class": "blip" }));
+    var t = el("text", { x: 12, y: -10, "class": "blbl" }); t.textContent = "G" + g; grp.appendChild(t);
+    $("blips").appendChild(grp);
+  }
+  grp.setAttribute("transform", "translate(" + xy.x.toFixed(1) + " " + xy.y.toFixed(1) + ")");
+  var stale = Date.now() - G[g].seen > 12000;
+  grp.childNodes[1].setAttribute("class", stale ? "blip stale" : "blip");
+}
+
+/* ── état des groupes (1 Hz) ── */
 setInterval(function(){
-  var d = new Date();
-  function p(n){ return (n<10?"0":"")+n; }
-  document.getElementById("clock").textContent = p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+  for (var g = 1; g <= 5; g++){
+    var s = G[g], o = $("o-" + g), v = $("v-" + g), age = s.seen ? Math.round((Date.now() - s.seen) / 1000) : -1;
+    if (!s.seen){ o.style.display = "flex"; o.className = "ov"; o.textContent = "EN ATTENTE DE LA BALISE " + g; }
+    else if (age > 12){ o.style.display = "flex"; o.className = "ov lost"; o.textContent = "SIGNAL PERDU — " + age + " S"; }
+    else if (!v.videoWidth){ o.style.display = "flex"; o.className = "ov"; o.textContent = "LIAISON ÉTABLIE — VIDÉO EN COURS…"; }
+    else o.style.display = "none";
+    $("m-" + g).textContent = s.pos ? "±" + s.pos.acc + " M · " + (age >= 0 ? age + " S" : "") : (s.seen ? "GPS EN ATTENTE" : "—");
+    drawBlip(g);
+  }
 }, 1000);
 
-/* ═══ 1. MOSAÏQUE : le standard rejoint le même salon, 5 affichages ═══ */
-/* Jitsi n'autorise qu'une participation par onglet : on rejoint UNE fois (vignette mosaïque)
-   et on affiche 5 iframes pointant le même salon en mode "vue film" n'est pas possible.
-   Solution robuste : 5 iframes du même salon, chaque iframe suit un participant via
-   l'API externe (selectParticipant). Le standard lui-même ne publie ni cam ni micro
-   dans ces iframes — il publie son micro UNIQUEMENT via WebRTC (bouton TRANSMETTRE). */
-var mosaic = document.getElementById("mosaic");
-var apis = [];
-for (var i = 1; i <= 5; i++){
-  var cell = document.createElement("div");
-  cell.className = "cell";
-  cell.innerHTML = '<div class="tag">GROUPE ' + i + '</div>' +
-    '<div class="gps" id="gps-' + i + '">—</div>' +
-    '<div class="off" id="off-' + i + '">EN ATTENTE</div>';
-  var ifr = document.createElement("iframe");
-  ifr.allow = "camera; microphone; autoplay; fullscreen";
-  ifr.src = FT_ORIGIN + "/" + ROOM + "#userInfo.displayName=STANDARD&config.startWithVideoMuted=true&config.startWithAudioMuted=true";
-  cell.appendChild(ifr);
-  mosaic.appendChild(cell);
-}
-
-/* ═══ pilotage des iframes via l'API externe Jitsi ═══
-   5 participants "spectateurs" muets, chacun épinglé sur SA balise :
-   on construit l'API sur la 1re iframe, les autres suivent via selectParticipant
-   quand la balise G· apparaît (nom affiché = "BALISE G·"). */
-var japi = null, japiReady = false;
-function initJitsiAPI(){
-  if (japiReady || !window.JitsiMeetExternalAPI) return;
-  var ifr0 = document.querySelector(".cell iframe");
-  if (!ifr0) return;
-  try{
-    japi = new JitsiMeetExternalAPI(FT_ORIGIN.replace("https://",""), {
-      roomName: ROOM,
-      parentNode: undefined,
-      onload: function(){}
+/* ── liaison ── */
+function startPeer(){
+  if (peer){ try { peer.destroy(); } catch(e){} }
+  setNet("CONNEXION…", false);
+  peer = new Peer(STD_ID, { debug: 1 });
+  peer.on("open", function(){ setNet("EN LIGNE", true); });
+  peer.on("disconnected", function(){ setNet("RECONNEXION…", false); setTimeout(function(){ try { peer.reconnect(); } catch(e){} }, 1500); });
+  peer.on("error", function(e){
+    if (e.type === "unavailable-id"){ setNet("STANDARD DÉJÀ OUVERT AILLEURS", false); setTimeout(startPeer, 4000); }
+    else if (e.type === "peer-unavailable"){ /* sans objet ici */ }
+    else { setNet("RÉSEAU — NOUVEL ESSAI", false); setTimeout(startPeer, 3000); }
+  });
+  peer.on("call", function(call){
+    var g = +(call.metadata && call.metadata.g);
+    if (!(g >= 1 && g <= 5)){ call.close(); return; }
+    var s = G[g];
+    if (s.call && s.call !== call){ try { s.call.close(); } catch(e){} }
+    var out = mic.clone(), tr = out.getAudioTracks()[0];
+    tr.enabled = s.talk;                 /* micro fermé hors appui */
+    s.call = call; s.track = tr; s.seen = Date.now();
+    call.answer(out);
+    call.on("stream", function(rs){ var v = $("v-" + g); v.srcObject = rs; v.play().catch(function(){}); });
+    call.on("close", function(){ if (s.call === call){ s.call = null; s.track = null; } tr.stop(); });
+    call.on("error", function(){});
+  });
+  peer.on("connection", function(conn){
+    var g = +(conn.metadata && conn.metadata.g);
+    conn.on("data", function(d){
+      if (!d) return;
+      var gg = g || d.g; if (!(gg >= 1 && gg <= 5)) return;
+      G[gg].conn = conn; G[gg].seen = Date.now();
+      if (d.pos) addPos(gg, d.pos);
     });
-    japiReady = true;
-  }catch(e){ /* API indisponible : mosaïque en mode brut, dégradé acceptable */ }
+    conn.on("open", function(){ if (g >= 1 && g <= 5){ G[g].conn = conn; G[g].seen = Date.now(); conn.send({ t: "talk", on: G[g].talk }); } });
+  });
 }
-/* épingle chaque cellule sur sa balise : la grille iframe reste en mode tuiles,
-   on masque les tuiles non concernées par simple sélection */
-setInterval(function(){
-  if (!japi || !japiReady) return;
-  try{
-    var pts = japi.getParticipantsInfo();
-    /* rien à forcer : les iframes affichent la mosaïque du salon ; chaque balise
-       y est visible par son nom. Le mode tuile suffit. */
-  }catch(e){}
-}, 3000);
 
-/* ═══ 2. CARTE : plan du secteur + repères GPS ═══ */
-/* bornes GPS du lycée — À CALIBRER sur site (voir feuille MJ) */
-/* bornes calées sur le lycée Guy de Maupassant, Fécamp (49.746528, 0.387825 — entrée)
-   emprise du bâtiment ~180 m E-O / ~130 m N-S. Ajuster sur place si besoin :
-   ouvrir standard.html?cal=1 pour le mode calibrage (affiche lat/lng du curseur GPS). */
-var BOUNDS = { lat1: 49.74735, lng1: 0.38690, lat2: 49.74570, lng2: 0.38895 };
-var WALLS = "M0.1 111.8L0.1 123.3M136.7 143.4L136.7 184.2M0.0 111.9L195.4 111.9M195.3 103.8L195.3 112.1M0.0 123.1L195.4 123.1M136.6 143.5L195.4 143.5M195.3 123.0L195.3 143.6M136.6 184.0L195.4 184.0M195.3 184.0L195.3 284.8M195.1 103.8L214.8 103.8M214.7 103.8L214.7 143.6M214.7 184.0L214.7 268.5M195.1 284.7L214.8 284.7M214.7 276.5L214.7 284.8M214.6 143.5L234.3 143.5M234.3 143.4L234.3 147.6M214.6 268.4L253.9 268.4M253.8 264.3L253.8 268.5M214.6 276.6L253.9 276.6M253.8 276.5L253.8 304.2M253.7 264.3L312.4 264.3M253.7 304.0L312.4 304.0M312.3 264.3L312.3 304.2M234.2 147.6L331.9 147.6M331.7 0.0L331.7 147.6M331.7 0.1L351.5 0.1M351.3 0.0L351.3 4.2M351.3 15.3L351.3 35.7M351.3 43.7L351.3 147.6M351.2 4.2L370.9 4.2M351.2 15.4L370.9 15.4M370.8 4.1L370.8 15.5M351.2 43.8L429.4 43.8M351.2 147.6L429.4 147.6M429.3 43.7L429.3 147.6M214.6 184.0L429.4 184.0M429.3 184.0L429.3 231.9M351.2 35.7L448.9 35.7M448.9 0.0L448.9 35.7M448.9 43.7L448.9 147.6M448.9 184.0L448.9 188.2M448.8 0.1L468.5 0.1M448.8 43.8L468.5 43.8M468.4 0.0L468.4 43.9M448.8 188.1L488.0 188.1M429.2 231.8L488.0 231.8M487.8 188.0L487.8 231.9M448.8 184.0L546.5 184.0M546.4 184.0L546.4 248.2M546.4 248.1L566.1 248.1M565.9 184.0L565.9 248.2M448.8 143.5L624.6 143.5M624.5 88.5L624.5 143.6M565.8 184.0L624.6 184.0M624.5 184.0L624.5 219.8M624.3 88.5L644.0 88.5M643.9 88.5L643.9 143.6M643.9 184.0L643.9 204.5M643.8 143.5L663.5 143.5M643.8 184.0L663.5 184.0M663.5 143.4L663.5 184.2M643.8 204.4L702.6 204.4M624.3 219.7L702.6 219.7M702.4 204.3L702.4 219.8";
-var mapwrap = document.getElementById("mapwrap");
-mapwrap.innerHTML = '<svg viewBox="-30 -30 765 365">' +
-  '<path d="' + WALLS + '" fill="none" stroke="rgba(0,200,255,.5)" stroke-width="2.5"/>' +
-  '<g id="blips"></g></svg>';
-var blipsG = document.getElementById("blips");
-var CAL = /[?&]cal=1/.test(location.search);
-if (CAL){
-  var calbox = document.createElement("div");
-  calbox.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:99;background:#000;color:#0f0;font-size:11px;padding:6px 10px;font-family:monospace;white-space:pre";
-  document.body.appendChild(calbox);
-  setInterval(function(){
-    var l = Object.keys(lastPos).map(function(g){ return "G"+g+": "+lastPos[g].lat.toFixed(6)+","+lastPos[g].lng.toFixed(6)+" ±"+lastPos[g].acc+"m"; });
-    calbox.textContent = "CALIBRAGE — Bornes actuelles: "+BOUNDS.lat1+","+BOUNDS.lng1+" → "+BOUNDS.lat2+","+BOUNDS.lng2+"\n"+(l.join("\n")||"aucune balise");
-  }, 1000);
+/* ── appuyer pour parler ── */
+function setTalk(g, on){
+  var s = G[g]; s.talk = on;
+  if (s.track) s.track.enabled = on;
+  if (s.conn && s.conn.open){ try { s.conn.send({ t: "talk", on: on }); } catch(e){} }
+  $("cell-" + g).classList.toggle("talk", on);
+  var b = $("pt-" + g); if (b) b.classList.toggle("on", on);
 }
-function toXY(lat, lng){
-  var x = (lng - BOUNDS.lng1) / (BOUNDS.lng2 - BOUNDS.lng1) * 702;
-  var y = (BOUNDS.lat1 - lat) / (BOUNDS.lat1 - BOUNDS.lat2) * 304;
-  return { x: Math.max(-10, Math.min(712, x)), y: Math.max(-10, Math.min(314, y)) };
+var groupsAll = [1,2,3,4,5];
+function bindPTT(btn, list){
+  function down(e){ e.preventDefault(); try { btn.setPointerCapture(e.pointerId); } catch(_){} list.forEach(function(g){ setTalk(g, true); }); btn.classList.add("on"); }
+  function up(e){ list.forEach(function(g){ setTalk(g, false); }); btn.classList.remove("on"); }
+  btn.addEventListener("pointerdown", down);
+  btn.addEventListener("pointerup", up);
+  btn.addEventListener("pointercancel", up);
+  btn.addEventListener("lostpointercapture", up);
+  btn.addEventListener("contextmenu", function(e){ e.preventDefault(); });
 }
-var lastPos = {};
-function updBlip(g){
-  var p = lastPos[g];
-  var el = document.getElementById("blip-" + g);
-  var ring = document.getElementById("ring-" + g);
-  var lbl = document.getElementById("lb-" + g);
-  if (!el){ 
-    el = document.createElementNS("http://www.w3.org/2000/svg","circle");
-    el.id = "blip-" + g; el.setAttribute("r", 6); el.setAttribute("class", "blip");
-    ring = document.createElementNS("http://www.w3.org/2000/svg","circle");
-    ring.id = "ring-" + g; ring.setAttribute("r", 11); ring.setAttribute("class", "blip-ring");
-    lbl = document.createElementNS("http://www.w3.org/2000/svg","text");
-    lbl.id = "lb-" + g; lbl.setAttribute("class", "blip-label"); lbl.textContent = "G"+g;
-    blipsG.appendChild(ring); blipsG.appendChild(el); blipsG.appendChild(lbl);
+for (var p = 1; p <= 5; p++){
+  var b = document.createElement("button"); b.className = "pt"; b.id = "pt-" + p;
+  b.innerHTML = "G" + p + "<small>MAINTENIR</small>"; $("ptt").appendChild(b); bindPTT(b, [p]);
+}
+var ba = document.createElement("button"); ba.className = "pt all"; ba.id = "pt-all";
+ba.innerHTML = "TOUS<small>ANNONCE</small>"; $("ptt").appendChild(ba); bindPTT(ba, groupsAll);
+/* clavier : touches 1 à 5 maintenues, 0 = tous */
+var held = {};
+document.addEventListener("keydown", function(e){
+  if (e.repeat) return; var k = e.key;
+  if (/^[1-5]$/.test(k)){ held[k] = 1; setTalk(+k, true); }
+  else if (k === "0"){ held[k] = 1; groupsAll.forEach(function(g){ setTalk(g, true); }); $("pt-all").classList.add("on"); }
+});
+document.addEventListener("keyup", function(e){
+  var k = e.key;
+  if (/^[1-5]$/.test(k)) setTalk(+k, false);
+  else if (k === "0"){ groupsAll.forEach(function(g){ setTalk(g, false); }); $("pt-all").classList.remove("on"); }
+});
+window.addEventListener("blur", function(){ groupsAll.forEach(function(g){ setTalk(g, false); }); $("pt-all").classList.remove("on"); });
+
+/* ── calibrage : standard.html?cal=1 ── */
+var CALMODE = /[?&]cal=1/.test(location.search), calRef = 1;
+function drawCal(){
+  var cg = $("calg"); while (cg.firstChild) cg.removeChild(cg.firstChild);
+  CAL.forEach(function(p, i){
+    cg.appendChild(el("circle", { cx: p.x, cy: p.y, r: 9, "class": "calpt" }));
+    var t = el("text", { x: p.x + 11, y: p.y + 16, "class": "blbl", style: "fill:#00ff6a;font-size:13px" }); t.textContent = "P" + (i + 1); cg.appendChild(t);
+  });
+  if (!CALMODE) return;
+  var res = "";
+  if (CAL.length >= 3 && T){
+    var e = 0; CAL.forEach(function(p){ var q = project(p.lat, p.lng); e += Math.hypot(q.x - p.x, q.y - p.y); });
+    res = " · écart moyen " + (e / CAL.length).toFixed(1) + " px";
   }
-  if (!p) return;
-  var xy = toXY(p.lat, p.lng);
-  el.setAttribute("cx", xy.x); el.setAttribute("cy", xy.y);
-  ring.setAttribute("cx", xy.x); ring.setAttribute("cy", xy.y);
-  lbl.setAttribute("x", xy.x + 13); lbl.setAttribute("y", xy.y + 5);
-  var gpsEl = document.getElementById("gps-" + g);
-  if (gpsEl) gpsEl.textContent = "±" + (p.acc || "?") + " m · " + new Date(p.ts).toLocaleTimeString("fr-FR");
-  var off = document.getElementById("off-" + g);
-  if (off) off.style.display = "none";
+  var btns = ""; for (var g = 1; g <= 5; g++) btns += '<button data-ref="' + g + '" class="' + (g === calRef ? "sel" : "") + '">BALISE G' + g + '</button>';
+  $("cal").innerHTML = "<b>CALIBRAGE</b> — placez-vous avec la balise choisie à un endroit précis, attendez 20 s, puis touchez cet endroit sur le plan. " +
+    "Deux points éloignés suffisent (le départ + l'autre bout du bâtiment), trois c'est mieux.<br>" + btns +
+    '<br>Points : <b>' + CAL.length + '</b>' + res + ' <button id="cal-undo">ANNULER LE DERNIER</button><button id="cal-clear">TOUT EFFACER</button>' +
+    '<textarea readonly id="cal-json">' + JSON.stringify(CAL) + '</textarea>';
+  [].forEach.call($("cal").querySelectorAll("[data-ref]"), function(b){ b.onclick = function(){ calRef = +b.dataset.ref; drawCal(); }; });
+  $("cal-undo").onclick = function(){ CAL.pop(); saveCal(); };
+  $("cal-clear").onclick = function(){ if (confirm("Effacer tous les points ?")){ CAL = []; saveCal(); } };
 }
-
-/* ═══ 3. PEERJS : recevoir les balises, appeler pour parler ═══ */
-var peer = new Peer(STD_ID, { debug: 0 });
-var conns = {};   /* g -> dataConnection */
-var calls = {};   /* g -> MediaConnection */
-var micStream = null;
-peer.on("open", function(){ console.log("standard prêt"); });
-peer.on("connection", function(conn){
-  conn.on("data", function(d){
-    if (d && d.t === "state" && d.g){
-      conns[d.g] = conn;
-      if (d.pos){ lastPos[d.g] = d.pos; updBlip(d.g); }
-    }
+function saveCal(){ try { localStorage.setItem("aurora-calib", JSON.stringify(CAL)); } catch(e){} fit(); drawCal(); for (var g = 1; g <= 5; g++) drawBlip(g); }
+if (CALMODE){
+  $("cal").classList.add("on");
+  svg.addEventListener("click", function(e){
+    var pos = G[calRef].pos;
+    if (!pos){ alert("Aucune position reçue de la balise G" + calRef + "."); return; }
+    var pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    var q = pt.matrixTransform(svg.getScreenCTM().inverse());
+    CAL.push({ lat: +pos.lat.toFixed(7), lng: +pos.lng.toFixed(7), x: +q.x.toFixed(1), y: +q.y.toFixed(1) });
+    saveCal();
   });
+}
+drawCal();
+
+/* ── démarrage (geste requis pour le micro) ── */
+$("go").addEventListener("click", function(){
+  $("gerr").textContent = "";
+  navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false })
+    .then(function(s){
+      mic = s; s.getAudioTracks().forEach(function(t){ t.enabled = true; });
+      $("gate").style.display = "none";
+      startPeer();
+    })
+    .catch(function(e){ $("gerr").textContent = "MICRO REFUSÉ OU ABSENT — autorisez le micro puis réessayez (" + (e && e.name) + ")"; });
 });
-peer.on("error", function(e){ console.warn("peer:", e.type); });
-
-/* micro du standard : acquisition paresseuse, partagée entre les appels */
-function getMic(){
-  if (micStream) return Promise.resolve(micStream);
-  return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } })
-    .then(function(s){ micStream = s; return s; });
-}
-
-/* ═══ 4. PUSH-TO-TALK ═══ */
-var selG = 1;
-document.querySelectorAll(".sel").forEach(function(b){
-  b.addEventListener("click", function(){
-    selG = parseInt(b.dataset.g, 10);
-    document.querySelectorAll(".sel").forEach(function(x){ x.classList.remove("active"); });
-    b.classList.add("active");
-  });
-});
-document.querySelector(".sel[data-g='1']").classList.add("active");
-
-var talk = document.getElementById("talk");
-var micstate = document.getElementById("micstate");
-function startTalk(){
-  getMic().then(function(stream){
-    var g = selG;
-    if (!conns[g]){ talkFail("BALISE G" + g + " HORS LIGNE"); return; }
-    var target = "balise-g" + g;
-    var call = peer.call(target, stream);
-    calls[g] = call;
-    talk.classList.add("on"); talk.querySelector("small").textContent = "EN LIGNE AVEC G" + g;
-    micstate.textContent = "MIC ON";
-    call.on("close", function(){ endTalk(); });
-  }).catch(function(){ talkFail("MICRO REFUSÉ"); });
-}
-function endTalk(){
-  Object.keys(calls).forEach(function(g){ try{ calls[g].close(); }catch(e){} calls[g] = null; });
-  talk.classList.remove("on"); talk.querySelector("small").textContent = "appuyer et parler";
-  micstate.textContent = "MIC";
-}
-function talkFail(msg){
-  talk.querySelector("small").textContent = msg;
-  setTimeout(function(){ talk.querySelector("small").textContent = "appuyer et parler"; }, 1800);
-}
-talk.addEventListener("pointerdown", function(e){ e.preventDefault(); startTalk(); });
-talk.addEventListener("pointerup", function(e){ e.preventDefault(); endTalk(); });
-talk.addEventListener("pointerleave", function(){ endTalk(); });
-/* clavier : barre espace */
-document.addEventListener("keydown", function(e){ if (e.code === "Space" && !e.repeat){ e.preventDefault(); startTalk(); } });
-document.addEventListener("keyup", function(e){ if (e.code === "Space"){ e.preventDefault(); endTalk(); } });
-
-/* rafraîchissement visuel des blips même sans nouveau point */
-setInterval(function(){ for (var g = 1; g <= 5; g++) if (lastPos[g]) updBlip(g); }, 2000);
+window.__aurora = { G: G, setTalk: setTalk, project: project };
 })();
 </script>
 </body>
