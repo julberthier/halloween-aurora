@@ -198,6 +198,10 @@ document.getElementById("big-red").addEventListener("click", function(){
   var b = this;
   b.classList.add("pressed");
   AURORA.sfx("succes", 0.5);
+  /* prévient les écrans du centre de commandement (cdc.html) */
+  var canal = (/[?&]canal=([\w-]+)/.exec(location.search) || [])[1] || "jb-aurora14-cdc-k7q2";
+  try { fetch("https://ntfy.sh/" + canal, { method: "POST", body: "alerte", keepalive: true }).catch(function(){}); } catch(e){}
+  try { localStorage.setItem("aur_cdc_ping", JSON.stringify({ m: "alerte", ts: Date.now() })); } catch(e){}
   setTimeout(function(){
     AURORA.goPage({ url:"video.html", stage:"video", fx:"blast" });
   }, 420);

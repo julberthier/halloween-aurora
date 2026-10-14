@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURORA // CENTRE DE COMMANDEMENT</title>
+<style>
+@font-face{font-family:'Orbitron';font-weight:400 900;font-display:block;src:url(assets/fonts/orbitron.woff2) format('woff2')}
+@font-face{font-family:'Share Tech Mono';font-weight:400;font-display:block;src:url(assets/fonts/sharetechmono.woff2) format('woff2')}
+:root{--bg:#01040a;--panel:#020a14;--ink:#eaf6ff;--blue:#00c8ff;--soft:#7fd4ff;--dim:#3f6f8c;--line:rgba(0,200,255,.28);
+  --red:#ff1e3c;--redsoft:#ff5468;--acc:var(--blue);--accsoft:var(--soft);
+  --ft:'Orbitron','Segoe UI',sans-serif;--fm:'Share Tech Mono','Consolas',monospace}
+body.alert{--acc:var(--red);--accsoft:var(--redsoft)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--fm);user-select:none;cursor:default}
+#screen{position:fixed;inset:0;display:flex;flex-direction:column;padding:.55vh .5vw;gap:.55vh}
+
+/* ── barre haute ── */
+#top{flex:0 0 auto;display:flex;align-items:center;gap:1.4vw;padding:.7vh 1vw;border:1px solid var(--line);background:linear-gradient(90deg,rgba(0,200,255,.08),transparent 60%)}
+#logo{font-family:var(--ft);font-weight:900;font-size:1.55vw;letter-spacing:.32em;color:#fff;text-shadow:0 0 18px rgba(0,200,255,.7)}
+#logo small{display:block;font-family:var(--fm);font-weight:400;font-size:.62vw;letter-spacing:.3em;color:var(--soft);text-shadow:none;margin-top:.2vh}
+.tk{font-size:.7vw;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;line-height:1.5}
+.tk b{display:block;color:var(--ink);font-weight:400;font-size:.95vw;letter-spacing:.12em}
+#state{margin-left:auto;font-family:var(--ft);font-weight:700;font-size:1vw;letter-spacing:.25em;padding:.7vh 1.2vw;border:1px solid var(--blue);color:var(--blue);text-shadow:0 0 10px var(--blue)}
+body.alert #state{border-color:var(--red);color:#fff;background:var(--red);text-shadow:none;animation:blink 1s steps(2) infinite}
+#clock{font-family:var(--ft);font-size:1.7vw;letter-spacing:.12em;color:#fff;font-variant-numeric:tabular-nums}
+
+/* ── bandeau d'alerte ── */
+#banner{flex:0 0 auto;display:none;align-items:center;gap:1.2vw;overflow:hidden;border:1px solid var(--red);background:repeating-linear-gradient(-45deg,rgba(255,30,60,.22) 0 14px,rgba(255,30,60,.08) 14px 28px)}
+body.alert #banner{display:flex}
+#banner .t{position:relative;z-index:2;flex:0 0 auto;background:var(--red);color:#fff;font-family:var(--ft);font-weight:900;font-size:.95vw;letter-spacing:.25em;padding:.8vh 1.2vw;animation:blink 1.2s steps(2) infinite}
+.mw{flex:1 1 auto;min-width:0;overflow:hidden}
+#banner .m{display:inline-block;white-space:nowrap;font-size:.95vw;letter-spacing:.2em;color:#fff;animation:marq 38s linear infinite}
+
+/* ── grille de fenêtres ── */
+#grid{flex:1 1 auto;min-height:0;display:grid;gap:.55vh .45vw;
+  grid-template-columns:1fr 1.05fr 1.05fr 1fr;grid-template-rows:1fr 1fr .95fr}
+.win{position:relative;display:flex;flex-direction:column;min-height:0;min-width:0;border:1px solid var(--line);background:var(--panel);overflow:hidden}
+.win::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,200,255,.05),transparent 30%)}
+.tb{flex:0 0 auto;display:flex;align-items:center;gap:.5vw;padding:.45vh .55vw;border-bottom:1px solid var(--line);background:rgba(0,200,255,.07);font-size:.66vw;letter-spacing:.18em;text-transform:uppercase;color:var(--soft)}
+.tb .ic{width:.55vw;height:.55vw;border:1px solid var(--acc);background:rgba(0,200,255,.2)}
+body.alert .tb .ic{background:var(--red);animation:blink 1.4s steps(2) infinite}
+.tb{white-space:nowrap}.tb .fn{color:var(--dim);letter-spacing:.08em;text-transform:none;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.tb .bt{margin-left:auto;display:flex;gap:.3vw}
+.tb .bt i{width:.62vw;height:.62vw;border:1px solid var(--dim);display:block}
+.bd{flex:1 1 auto;position:relative;min-height:0}
+.bd canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.w-log{grid-column:1;grid-row:1/3}.w-map{grid-column:2/4;grid-row:1/3}.w-res{grid-column:1;grid-row:3}
+.w-cam{grid-column:2/4;grid-row:3}.w-glb{grid-column:4;grid-row:1}.w-thr{grid-column:4;grid-row:2}.w-sig{grid-column:4;grid-row:3}
+
+/* journal */
+#log{position:absolute;inset:0;padding:.6vh .6vw;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;font-size:.68vw;line-height:1.55;
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 22%);mask-image:linear-gradient(180deg,transparent,#000 22%)}
+#log div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9fc3d8}
+#log div .ts{color:var(--dim)}
+#log div.ok b{color:var(--blue);font-weight:400}
+#log div.wr{color:#fff}
+#log div.cr{color:var(--redsoft);font-weight:700;text-shadow:0 0 8px rgba(255,30,60,.6)}
+#log div.new{animation:lin .5s steps(4)}
+
+/* ressources */
+#res{position:absolute;inset:0;padding:.9vh .7vw;display:flex;flex-direction:column;justify-content:space-around}
+.rr{display:grid;grid-template-columns:1fr auto;gap:.3vh .4vw;font-size:.62vw;letter-spacing:.12em;color:var(--soft);text-transform:uppercase}
+.rr .v{color:#fff;font-variant-numeric:tabular-nums}
+.rr .bar{grid-column:1/3;height:.75vh;background:rgba(0,200,255,.1);position:relative;overflow:hidden}
+.rr .bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(0,200,255,.4),var(--blue));transition:width .5s linear}
+.rr.hot .v{color:var(--redsoft)}.rr.hot .bar i{background:linear-gradient(90deg,rgba(255,30,60,.4),var(--red))}
+
+/* caméras */
+#cams{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);gap:.35vw;padding:.4vw}
+#cams .c{position:relative;border:1px solid rgba(0,200,255,.22);background:#000;overflow:hidden}
+#cams .c canvas{position:absolute;inset:0;width:100%;height:100%}
+#cams .c .l{position:absolute;left:.4vw;top:.4vh;max-width:calc(100% - 4.2vw);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:.58vw;letter-spacing:.14em;color:#fff;text-shadow:0 0 3px #000;z-index:2}
+#cams .c .r{position:absolute;right:.4vw;top:.4vh;font-size:.58vw;letter-spacing:.14em;color:#fff;z-index:2}
+#cams .c .r::before{content:"● ";color:var(--red);animation:blink 1.6s steps(2) infinite}
+#cams .c .ts{position:absolute;left:.4vw;bottom:.4vh;font-size:.56vw;color:#cfe;z-index:2;font-variant-numeric:tabular-nums}
+#cams .c .mv{position:absolute;right:.4vw;bottom:.4vh;font-size:.58vw;letter-spacing:.12em;z-index:2;color:#fff;background:var(--red);padding:0 .3vw;display:none;animation:blink .8s steps(2) infinite}
+#cams .c.motion .mv{display:block}
+#cams .c.motion{border-color:var(--red)}
+
+/* menace */
+#thr{position:absolute;inset:0;display:flex;flex-direction:column}
+#thr canvas{position:relative;flex:1 1 60%;min-height:0;width:100%}
+#thr .lv{flex:0 0 auto;text-align:center;font-family:var(--ft);font-weight:700;font-size:.85vw;letter-spacing:.2em;color:#fff;padding-bottom:.3vh}
+#thr .lv small{display:block;font-family:var(--fm);font-weight:400;font-size:.6vw;color:var(--soft);letter-spacing:.2em;margin-top:.2vh}
+#thr #spec{flex:1 1 40%;border-top:1px solid var(--line)}
+
+/* signatures */
+#sig{position:absolute;inset:0;padding:.5vh .6vw;display:flex;flex-direction:column;gap:.35vh;font-size:.62vw;letter-spacing:.08em;overflow:hidden}
+.sr{display:grid;grid-template-columns:auto 1fr auto;gap:.5vw;align-items:center;padding:.25vh .3vw;border-left:2px solid rgba(0,200,255,.4);background:rgba(0,200,255,.04);position:relative}
+.sr .id{color:var(--dim)}.sr .nm{color:var(--soft);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.sr .st{color:var(--blue);letter-spacing:.14em}
+.sr.u .st{color:#fff}.sr.u{border-left-color:#fff}
+.sr.m{border-left-color:var(--red);background:rgba(255,30,60,.12)}.sr.m .st{color:#fff;background:var(--red);padding:0 .3vw;animation:blink 1s steps(2) infinite}
+.sr.scan::after{content:"";position:absolute;top:0;bottom:0;width:30%;left:0;background:linear-gradient(90deg,transparent,rgba(0,200,255,.35),transparent);animation:scan 1.1s linear}
+
+/* fenêtres flottantes */
+.float{position:absolute;z-index:20;border:1px solid var(--blue);background:rgba(2,10,20,.94);box-shadow:0 0 40px rgba(0,200,255,.25);min-width:20vw;animation:pop .25s steps(5)}
+.float.r{border-color:var(--red);box-shadow:0 0 50px rgba(255,30,60,.45)}
+.float .tb{background:rgba(0,200,255,.15)}
+.float.r .tb{background:var(--red);color:#fff}.float.r .tb .fn{color:#ffd0d6}
+.float .ct{padding:1.2vh 1vw;font-size:.78vw;letter-spacing:.1em;line-height:1.7;color:#fff}
+.float .ct small{display:block;color:var(--soft);font-size:.62vw}
+.float .pb{height:.8vh;background:rgba(0,200,255,.15);margin-top:.8vh;overflow:hidden}
+.float .pb i{display:block;height:100%;width:0;background:var(--blue)}
+.float.r .pb i{background:var(--red)}
+#hex{position:absolute;z-index:15;left:calc(25% + 1.2vw);top:15.5vh;width:14vw;border:1px solid var(--line);background:rgba(2,10,20,.9)}
+#hex pre{font-family:var(--fm);font-size:.54vw;line-height:1.42;color:#5f97b5;padding:.4vh .5vw;height:13vh;overflow:hidden}
+#hex pre b{color:#fff;font-weight:400}
+
+/* déclenchement */
+#boom{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;gap:2vh;background:rgba(40,0,8,.88);text-align:center}
+#boom.on{display:flex;animation:boomIn 4.2s steps(30) forwards}
+#boom .a{font-family:var(--ft);font-weight:900;font-size:4.2vw;letter-spacing:.18em;color:#fff;text-shadow:0 0 40px var(--red),0 0 4px #fff}
+#boom .b{font-size:1.2vw;letter-spacing:.35em;color:#ffd0d6}
+#boom .c{width:46vw;height:1vh;background:rgba(255,255,255,.15)}#boom .c i{display:block;height:100%;background:#fff;animation:fill 3.6s linear forwards}
+#flash{position:fixed;inset:0;z-index:99;pointer-events:none;background:var(--red);opacity:0}
+#flash.go{animation:flash 1.1s ease-out}
+
+/* bas */
+#ticker{flex:0 0 auto;display:flex;align-items:center;overflow:hidden;border:1px solid var(--line);font-size:.72vw;letter-spacing:.2em;color:var(--soft);text-transform:uppercase}
+#ticker .k{position:relative;z-index:2;flex:0 0 auto;padding:.5vh .9vw;background:rgba(0,200,255,.15);color:#fff;font-family:var(--ft);font-weight:700;letter-spacing:.25em}
+body.alert #ticker .k{background:var(--red)}
+#ticker .s{display:inline-block;white-space:nowrap;animation:marq 70s linear infinite;padding-left:2vw}
+#scan{position:fixed;inset:0;pointer-events:none;z-index:90;background:radial-gradient(ellipse 110% 95% at 50% 48%,transparent 60%,rgba(0,0,0,.6)),repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.08) 2px 4px)}
+body.alert #scan{background:radial-gradient(ellipse 110% 95% at 50% 48%,transparent 55%,rgba(90,0,12,.55)),repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.08) 2px 4px);animation:pulse 2.4s ease-in-out infinite}
+#help{position:fixed;left:50%;bottom:6vh;transform:translateX(-50%);z-index:95;font-size:.8vw;letter-spacing:.2em;color:#fff;background:rgba(2,10,20,.92);border:1px solid var(--blue);padding:1.2vh 1.6vw;transition:opacity .6s}
+#mjdot{position:fixed;right:.4vw;bottom:.4vh;width:8px;height:8px;border-radius:50%;background:rgba(0,200,255,.12);z-index:96;border:0;cursor:pointer}
+body.glitch #grid{animation:gl .14s steps(2) 1}
+
+@keyframes blink{50%{opacity:.35}}
+@keyframes marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes lin{from{opacity:0;transform:translateX(-8px)}}
+@keyframes scan{to{left:70%}}
+@keyframes pop{from{opacity:0;transform:scale(.96)}}
+@keyframes flash{0%{opacity:.75}100%{opacity:0}}
+@keyframes boomIn{0%{opacity:0}4%{opacity:1}90%{opacity:1}100%{opacity:0;visibility:hidden}}
+@keyframes fill{from{width:0}to{width:100%}}
+@keyframes pulse{50%{opacity:.75}}
+@keyframes gl{0%{transform:translate(3px,-2px) skewX(1deg)}50%{transform:translate(-4px,2px)}100%{transform:none}}
+</style>
+</head>
+<body>
+<div id="screen">
+  <div id="top">
+    <div id="logo">AURORA<small>CENTRE DE COMMANDEMENT — SECTEUR FÉCAMP</small></div>
+    <div class="tk">Nœud<b>FECAMP-07</b></div>
+    <div class="tk">Programme<b>ÉQUILIBRE</b></div>
+    <div class="tk">Liaisons actives<b id="links">128</b></div>
+    <div class="tk">Activité<b id="uptime">000:00:00</b></div>
+    <div id="state">SYSTÈME NOMINAL</div>
+    <div id="clock">00:00:00</div>
+  </div>
+  <div id="banner"><div class="t">⚠ PROTOCOLE D'URGENCE DÉCLENCHÉ</div><div class="mw"><div class="m" id="bmsg"></div></div></div>
+  <div id="grid">
+    <section class="win w-log"><div class="tb"><span class="ic"></span>Journal système<span class="fn">aurora-noyau.journal</span><span class="bt"><i></i><i></i><i></i></span></div><div class="bd"><div id="log"></div></div></section>
+    <section class="win w-map"><div class="tb"><span class="ic"></span>Plan du secteur — surveillance en temps réel<span class="fn">radar.sct · balayage 4,2 s</span><span class="bt"><i></i><i></i><i></i></span></div><div class="bd"><canvas id="map"></canvas></div></section>
+    <section class="win w-res"><div class="tb"><span class="ic"></span>Ressources du noyau<span class="fn">moniteur</span><span class="bt"><i></i><i></i><i></i></span></div><div class="bd"><div id="res"></div></div></section>
+    <section class="win w-cam"><div class="tb"><span class="ic"></span>Caméras du secteur<span class="fn">flux vidéo · 4 sur 37</span><span class="bt"><i></i><i></i><i></i></span></div><div class="bd"><div id="cams"></div></div></section>
+    <section class="win w-glb"><div class="tb"><span class="ic"></span>Réseau AURORA — liaisons mondiales<span class="fn">orbite basse</span><span class="bt"><i></i><i></i><i></i></span></div><div class="bd"><canvas id="globe"></canvas></div></section>
+    <section class="win w-thr"><div class="tb"><span class="ic"></span>Niveau de menace<span class="fn">évaluation continue</span><span class="bt"><i></i><i></i><i></i></span></div><div class="bd"><div id="thr"><canvas id="gauge"></canvas><div class="lv" id="lv">NIVEAU 1<small>VEILLE</small></div><canvas id="spec"></canvas></div></div></section>
+    <section class="win w-sig"><div class="tb"><span class="ic"></span>Analyse des signatures<span class="fn">biométrie</span><span class="bt"><i></i><i></i><i></i></span></div><div class="bd"><div id="sig"></div></div></section>
+  </div>
+  <div id="ticker"><div class="k">FLUX</div><div class="mw"><div class="s" id="tick"></div></div></div>
+</div>
+<div id="hex"><div class="tb"><span class="ic"></span>Mémoire<span class="fn">0x7F00</span></div><pre id="hexp"></pre></div>
+<div id="boom"><div class="a">PROTOCOLE D'URGENCE<br>DÉCLENCHÉ</div><div class="b" id="boomb">BOUTON D'URGENCE ACTIVÉ — SECTEUR FÉCAMP</div><div class="c"><i></i></div></div>
+<div id="flash"></div>
+<div id="scan"></div>
+<div id="help">CLIQUER POUR PASSER EN PLEIN ÉCRAN · SON DÉSACTIVÉ</div>
+<button id="mjdot" aria-label="."></button>
+
+<script>
+(function(){
+"use strict";
+/* ═══ CANAL DE DÉCLENCHEMENT ═══
+   alert.html publie « alerte » sur ce canal quand le bouton rouge est pressé.
+   Tous les écrans CDC l'écoutent (ntfy.sh, gratuit, sans compte). */
+var Q = new URLSearchParams(location.search);
+var TOPIC = Q.get("canal") || "jb-aurora14-cdc-k7q2";
+var NTFY = "https://ntfy.sh/" + TOPIC;
+var $ = function(id){ return document.getElementById(id); };
+var rnd = Math.random, now = function(){ return Date.now(); };
+function pick(a){ return a[(rnd() * a.length) | 0]; }
+function p2(n){ return (n < 10 ? "0" : "") + n; }
+function hms(d){ return p2(d.getHours()) + ":" + p2(d.getMinutes()) + ":" + p2(d.getSeconds()); }
+var T0 = now(), ALERT = false, tAlert = 0;
+
+/* ═══ textes ═══ */
+var SECT = ["aile C","aile B","couloir principal","hall d'entrée","escalier nord","CDI","bâtiment G","bâtiment T","aile K","réfectoire","internat","cour intérieure","local technique","bâtiment L"];
+var CALM = [
+ ["ok","Analyse thermique — {s} : <b>nominale</b>"],["ok","Synchronisation du nœud FECAMP-{n2} … <b>ok</b>"],
+ ["ok","Programme ÉQUILIBRE : {n1} intervention(s) silencieuse(s) — <b>conforme</b>"],["","Balayage radar n° {n4} terminé"],
+ ["","Paquet {hx} reçu du site {n2} — {n3} ko"],["ok","Contrôle d'intégrité du pare-feu : <b>100 %</b>"],
+ ["","Mise à jour du modèle de population — {n3} profils"],["ok","Caméra {n2} — {s} : <b>flux stable</b>"],
+ ["","Relais satellite AUR-SAT-{n1} : latence {n2} ms"],["ok","Taux de stabilité sociale : <b>{p} %</b>"],
+ ["","Archivage du journal {hx} … terminé"],["ok","Aucune anomalie biométrique — {s}"],
+ ["","Calibrage des capteurs acoustiques — {s}"],["","Liaison avec le site 12 : silence radio ({n2} jours)"]];
+var HOT = [
+ ["cr","!! Signature métamorphe détectée — {s} [DANGER IMMÉDIAT]"],["cr","!! Confinement du secteur — {s} : ÉCHEC"],
+ ["wr","Perte de contact — caméra {n2} ({s})"],["cr","!! Programme ÉQUILIBRE : réponse non autorisée — {n2} spécimens actifs"],
+ ["wr","Commande humaine reçue : PROTOCOLE D'URGENCE"],["wr","Tentative de reprise du contrôle … refusée"],
+ ["cr","!! Mouvement non identifié — {s} — probabilité {p} %"],["wr","Pare-feu : intégrité {n2} %"],
+ ["wr","Sources lumineuses localisées : 5 — récupération en cours"],["cr","!! Liaison perdue avec le nœud FECAMP-{n2}"],
+ ["wr","Bruit élevé détecté — {s} : les spécimens se remettent en mouvement"],["wr","Vérification des signatures humaines — {n3} échantillons"],
+ ["cr","!! Cri d'alerte enregistré — {s}"],["wr","Séquence d'annihilation : fragments dispersés dans le secteur"]];
+function fill(t){
+  return t.replace("{s}", pick(SECT)).replace("{n1}", 1 + (rnd() * 9 | 0)).replace("{n2}", p2(1 + (rnd() * 98 | 0)))
+    .replace("{n3}", 100 + (rnd() * 900 | 0)).replace("{n4}", 10000 + (rnd() * 89999 | 0))
+    .replace("{hx}", "0x" + (rnd() * 0xFFFFFF | 0).toString(16).toUpperCase().padStart(6, "0"))
+    .replace("{p}", (ALERT ? 61 + rnd() * 38 : 97 + rnd() * 2.9).toFixed(1).replace(".", ","));
+}
+
+/* ═══ journal ═══ */
+var logEl = $("log");
+function log(cls, txt){
+  var d = document.createElement("div"); d.className = (cls || "") + " new";
+  d.innerHTML = '<span class="ts">' + hms(new Date()) + '</span>  ' + txt;
+  logEl.appendChild(d);
+  while (logEl.children.length > 60) logEl.removeChild(logEl.firstChild);
+  setTimeout(function(){ d.classList.remove("new"); }, 600);
+}
+(function loop(){
+  var e = ALERT && rnd() < .8 ? pick(HOT) : pick(CALM);
+  log(e[0], fill(e[1]));
+  setTimeout(loop, ALERT ? 280 + rnd() * 700 : 700 + rnd() * 1500);
+})();
+
+/* ═══ ressources ═══ */
+var RES = [["Cœurs de calcul", 31, 94],["Mémoire neuronale", 44, 88],["Liaison satellite", 92, 41],["Température du noyau", 38, 91],["Bande passante", 27, 97],["Intégrité du pare-feu", 100, 14]];
+var resEl = $("res"), resV = RES.map(function(r){ return r[1]; });
+RES.forEach(function(r, i){
+  var d = document.createElement("div"); d.className = "rr"; d.id = "rr" + i;
+  d.innerHTML = '<span>' + r[0] + '</span><span class="v">0 %</span><div class="bar"><i></i></div>'; resEl.appendChild(d);
+});
+setInterval(function(){
+  RES.forEach(function(r, i){
+    var k = ALERT ? Math.min(1, (now() - tAlert) / 90000) : 0, tgt = r[1] + (r[2] - r[1]) * k;
+    resV[i] += (tgt + (rnd() - .5) * (ALERT ? 14 : 7) - resV[i]) * .35;
+    var v = Math.max(1, Math.min(100, resV[i])), el = $("rr" + i);
+    el.querySelector(".v").textContent = (i === 3 ? Math.round(20 + v * .7) + " °C" : Math.round(v) + " %");
+    el.querySelector("i").style.width = v + "%";
+    el.classList.toggle("hot", ALERT && ((i === 5 && v < 50) || (i === 2 && v < 55) || ((i === 0 || i === 3 || i === 4) && v > 80)));
+  });
+  $("links").textContent = ALERT ? Math.max(9, 128 - Math.round((now() - tAlert) / 2500) + (rnd() * 4 | 0)) : 126 + (rnd() * 5 | 0);
+}, 600);
+
+/* ═══ signatures ═══ */
+var NAMES = ["Sujet 0412 — couloir principal","Sujet 0388 — aile C","Sujet 0517 — CDI","Sujet 0091 — hall","Sujet 0733 — internat","Sujet 0264 — aile K","Sujet 0645 — escalier nord","Sujet 0159 — bâtiment G","Sujet 0870 — réfectoire","Sujet 0302 — bâtiment T"];
+var sigEl = $("sig"), SIG = NAMES.map(function(n, i){
+  var d = document.createElement("div"); d.className = "sr";
+  d.innerHTML = '<span class="id">' + p2(i + 1) + '</span><span class="nm">' + n + '</span><span class="st">HUMAIN</span>';
+  sigEl.appendChild(d); return { el: d, st: 0 };
+});
+var si = 0;
+setInterval(function(){
+  var s = SIG[si % SIG.length]; si++;
+  s.el.classList.remove("scan"); void s.el.offsetWidth; s.el.classList.add("scan");
+  setTimeout(function(){
+    var st = 0;
+    if (ALERT){ var r = rnd(), k = Math.min(1, (now() - tAlert) / 120000); st = r < .22 + .25 * k ? 2 : r < .5 + .2 * k ? 1 : 0; }
+    s.st = st; s.el.className = "sr" + (st === 2 ? " m" : st === 1 ? " u" : "");
+    s.el.querySelector(".st").textContent = st === 2 ? "MÉTAMORPHE" : st === 1 ? "INDÉTERMINÉ" : "HUMAIN";
+    if (st === 2 && rnd() < .5) log("cr", "!! " + s.el.querySelector(".nm").textContent + " : signature MÉTAMORPHE");
+  }, 1100);
+}, 1500);
+
+/* ═══ mémoire (hex) ═══ */
+var hexL = [], hexA = 0x7F00;
+setInterval(function(){
+  var b = [], a = "";
+  for (var i = 0; i < 8; i++){ var v = rnd() * 256 | 0; b.push((v < 16 ? "0" : "") + v.toString(16).toUpperCase()); a += v > 32 && v < 127 ? String.fromCharCode(v).replace(/[<>&]/g, ".") : "."; }
+  hexA = (hexA + 8) & 0xFFFF;
+  hexL.push('<b>' + hexA.toString(16).toUpperCase().padStart(4, "0") + '</b>  ' + b.join(" ") + '  ' + a);
+  if (hexL.length > 11) hexL.shift();
+  $("hexp").innerHTML = hexL.join("\n");
+}, 140);
+
+/* ═══ bandeau, défilant, horloge ═══ */
+var TK_CALM = "PROGRAMME ÉQUILIBRE : STABILITÉ SOCIALE 98,7 % · AUCUNE ANOMALIE SIGNALÉE DANS LE SECTEUR FÉCAMP · NŒUDS SYNCHRONISÉS · SITE 12 : AUCUN CONTACT DEPUIS 41 JOURS · MAINTENANCE PLANIFIÉE DES CAPTEURS ACOUSTIQUES · LIAISONS SATELLITES NOMINALES · ";
+var TK_HOT = "⚠ PROTOCOLE D'URGENCE DÉCLENCHÉ · SIGNATURES MÉTAMORPHES ACTIVES DANS LE SECTEUR · RÉCUPÉRER LES SOURCES LUMINEUSES · NE JAMAIS SE DÉPLACER SEUL · LES SPÉCIMENS SONT FIGÉS PAR LA LUMIÈRE · LE BRUIT LES REMET EN MOUVEMENT · SÉQUENCE D'ANNIHILATION REQUISE · ";
+function setTexts(){
+  var t = ALERT ? TK_HOT : TK_CALM; $("tick").textContent = t + t;
+  var b = "CONFINEMENT ROMPU · SPÉCIMENS MÉTAMORPHES EN LIBERTÉ · TOUT LE PERSONNEL AU POINT DE RASSEMBLEMENT · ";
+  $("bmsg").textContent = b + b + b;
+}
+setInterval(function(){
+  var d = new Date(); $("clock").textContent = hms(d);
+  var s = (now() - T0) / 1000 | 0; $("uptime").textContent = String(s / 3600 | 0).padStart(3, "0") + ":" + p2((s / 60 | 0) % 60) + ":" + p2(s % 60);
+}, 500);
+
+/* ═══ fenêtres flottantes ═══ */
+var POP_CALM = [["Synchronisation","Synchronisation du programme ÉQUILIBRE","nœuds du secteur : 37 / 37"],["Sauvegarde","Sauvegarde du modèle de population","archive 0x{hx}"],["Diagnostic","Diagnostic des capteurs","aucun défaut détecté"],["Mise à jour","Mise à jour des profils biométriques","{n3} profils traités"]];
+var POP_HOT = [["Alerte","⚠ CONFINEMENT COMPROMIS — {s}","protocole de reprise : refusé"],["Signature","SIGNATURE NON IDENTIFIÉE — {s}","probabilité métamorphe : {p} %"],["Liaison","LIAISON PERDUE AVEC LE NŒUD FECAMP-{n2}","tentative de reconnexion…"],["Alerte","⚠ MOUVEMENT DÉTECTÉ — {s}","caméra {n2} · enregistrement en cours"],["Commande","ORDRE HUMAIN EN ATTENTE","séquence d'annihilation : incomplète"]];
+function popup(){
+  var hot = ALERT, e = hot ? pick(POP_HOT) : pick(POP_CALM), f = document.createElement("div");
+  f.className = "float" + (hot ? " r" : "");
+  f.innerHTML = '<div class="tb"><span class="ic"></span>' + e[0] + '<span class="fn">' + (hot ? "priorité maximale" : "tâche de fond") + '</span><span class="bt"><i></i><i></i><i></i></span></div>' +
+    '<div class="ct">' + fill(e[1]) + '<small>' + fill(e[2]) + '</small><div class="pb"><i></i></div></div>';
+  var g = $("grid").getBoundingClientRect();
+  f.style.left = (g.left + g.width * (.27 + rnd() * .3)) + "px"; f.style.top = (g.top + g.height * (.12 + rnd() * .45)) + "px";
+  document.body.appendChild(f);
+  var dur = 5000 + rnd() * 4000, bar = f.querySelector(".pb i"), t0 = now();
+  var iv = setInterval(function(){ var u = Math.min(1, (now() - t0) / (dur - 600)); bar.style.width = (hot ? Math.min(100, u * 160) : u * 100) + "%"; }, 120);
+  setTimeout(function(){ clearInterval(iv); f.remove(); }, dur);
+  setTimeout(popup, ALERT ? 7000 + rnd() * 9000 : 16000 + rnd() * 22000);
+}
+setTimeout(popup, 6000);
+
+/* ═══ CANVAS ═══ */
+var DPR = Math.min(1.5, window.devicePixelRatio || 1), SIZE = new Map();
+var ro = new ResizeObserver(function(es){ es.forEach(function(e){ var c = e.target; c.width = Math.max(10, Math.round(c.clientWidth * DPR)); c.height = Math.max(10, Math.round(c.clientHeight * DPR)); }); });
+function cv(id){ var c = $(id); ro.observe(c); return c; }
+var BLUE = "0,200,255", RED = "255,30,60";
+function acc(a){ return "rgba(" + (ALERT ? RED : BLUE) + "," + a + ")"; }
+
+/* — plan du secteur + radar — */
+var mapC = cv("map"), mctx = mapC.getContext("2d"), WALLS = new Path2D("M0.1 111.8L0.1 123.3M136.7 143.4L136.7 184.2M0.0 111.9L195.4 111.9M195.3 103.8L195.3 112.1M0.0 123.1L195.4 123.1M136.6 143.5L195.4 143.5M195.3 123.0L195.3 143.6M136.6 184.0L195.4 184.0M195.3 184.0L195.3 284.8M195.1 103.8L214.8 103.8M214.7 103.8L214.7 143.6M214.7 184.0L214.7 268.5M195.1 284.7L214.8 284.7M214.7 276.5L214.7 284.8M214.6 143.5L234.3 143.5M234.3 143.4L234.3 147.6M214.6 268.4L253.9 268.4M253.8 264.3L253.8 268.5M214.6 276.6L253.9 276.6M253.8 276.5L253.8 304.2M253.7 264.3L312.4 264.3M253.7 304.0L312.4 304.0M312.3 264.3L312.3 304.2M234.2 147.6L331.9 147.6M331.7 0.0L331.7 147.6M331.7 0.1L351.5 0.1M351.3 0.0L351.3 4.2M351.3 15.3L351.3 35.7M351.3 43.7L351.3 147.6M351.2 4.2L370.9 4.2M351.2 15.4L370.9 15.4M370.8 4.1L370.8 15.5M351.2 43.8L429.4 43.8M351.2 147.6L429.4 147.6M429.3 43.7L429.3 147.6M214.6 184.0L429.4 184.0M429.3 184.0L429.3 231.9M351.2 35.7L448.9 35.7M448.9 0.0L448.9 35.7M448.9 43.7L448.9 147.6M448.9 184.0L448.9 188.2M448.8 0.1L468.5 0.1M448.8 43.8L468.5 43.8M468.4 0.0L468.4 43.9M448.8 188.1L488.0 188.1M429.2 231.8L488.0 231.8M487.8 188.0L487.8 231.9M448.8 184.0L546.5 184.0M546.4 184.0L546.4 248.2M546.4 248.1L566.1 248.1M565.9 184.0L565.9 248.2M448.8 143.5L624.6 143.5M624.5 88.5L624.5 143.6M565.8 184.0L624.6 184.0M624.5 184.0L624.5 219.8M624.3 88.5L644.0 88.5M643.9 88.5L643.9 143.6M643.9 184.0L643.9 204.5M643.8 143.5L663.5 143.5M643.8 184.0L663.5 184.0M663.5 143.4L663.5 184.2M643.8 204.4L702.6 204.4M624.3 219.7L702.6 219.7M702.4 204.3L702.4 219.8");
+var WP = [[40,117],[160,117],[300,179],[400,179],[456,208],[520,165],[600,165],[650,160],[340,60],[340,120],[440,90],[230,220],[280,285],[555,215],[680,212],[100,117],[380,25],[620,120]];
+var LBL = [["AILE OUEST",60,104],["COULOIR PRINCIPAL",250,170],["BÂT. L",380,20],["BÂT. G",618,82],["BÂT. T",675,200],["ANNEXE",270,298],["SALLE DE CONTRÔLE",430,226]];
+function agent(kind){ var a = pick(WP), b = pick(WP); return { k: kind, x: a[0], y: a[1], tx: b[0], ty: b[1], sp: kind ? 9 + rnd() * 9 : 14 + rnd() * 16, hit: 0, id: (rnd() * 900 + 100) | 0 }; }
+var AG = []; for (var i = 0; i < 9; i++) AG.push(agent(0));
+var SPEC = []; for (i = 0; i < 6; i++) SPEC.push(agent(1));
+var sweep = 0, lastT = performance.now(), BG = null;
+function drawMap(dt, t){
+  var W = mapC.width, H = mapC.height, c = mctx; if (W < 20) return;
+  var s = Math.min(W / 760, H / 360), ox = (W - 702 * s) / 2, oy = (H - 304 * s) / 2;
+  if (!BG || BG.width !== W || BG.height !== H){
+    BG = document.createElement("canvas"); BG.width = W; BG.height = H; var b = BG.getContext("2d");
+    b.strokeStyle = "rgba(0,200,255,.06)"; b.lineWidth = 1;
+    for (var gx = 0; gx < W; gx += 40 * DPR){ b.beginPath(); b.moveTo(gx, 0); b.lineTo(gx, H); b.stroke(); }
+    for (var gy = 0; gy < H; gy += 40 * DPR){ b.beginPath(); b.moveTo(0, gy); b.lineTo(W, gy); b.stroke(); }
+    b.setTransform(s,0,0,s,ox,oy);
+    b.strokeStyle = "rgba(0,200,255,.75)"; b.lineWidth = 2.2; b.shadowColor = "rgba(0,200,255,.6)"; b.shadowBlur = 6 * DPR; b.stroke(WALLS); b.shadowBlur = 0;
+    b.font = "10px 'Share Tech Mono',monospace"; b.fillStyle = "rgba(127,212,255,.45)";
+    LBL.forEach(function(l){ b.fillText(l[0], l[1], l[2]); });
+  }
+  c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,W,H); c.drawImage(BG, 0, 0);
+  c.setTransform(s,0,0,s,ox,oy);
+  c.font = "10px 'Share Tech Mono',monospace";
+  /* balayage */
+  var cx = 351, cy = 152, R = 430; sweep = (sweep + dt / 4200 * Math.PI * 2) % (Math.PI * 2);
+  if (c.createConicGradient){
+    var cg = c.createConicGradient(sweep - 1.2, cx, cy); cg.addColorStop(0, acc(0)); cg.addColorStop(1.2 / (Math.PI * 2), acc(.16)); cg.addColorStop(1.2 / (Math.PI * 2) + .0001, acc(0)); cg.addColorStop(1, acc(0));
+    c.fillStyle = cg; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.fill();
+  } else for (var k = 0; k < 26; k++){
+    var a0 = sweep - k * .045, a1 = a0 - .05;
+    c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R, a1, a0); c.closePath(); c.fillStyle = acc(.13 * (1 - k / 26)); c.fill();
+  }
+  c.strokeStyle = acc(.8); c.lineWidth = 1.5; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.cos(sweep) * R, cy + Math.sin(sweep) * R); c.stroke();
+  for (var r = 60; r < R; r += 80){ c.strokeStyle = "rgba(0,200,255,.08)"; c.beginPath(); c.arc(cx, cy, r, 0, 7); c.stroke(); }
+  /* contacts */
+  function step(a){
+    var dx = a.tx - a.x, dy = a.ty - a.y, d = Math.hypot(dx, dy);
+    if (d < 3){ var n = pick(WP); a.tx = n[0] + (rnd() - .5) * 14; a.ty = n[1] + (rnd() - .5) * 10; }
+    else { a.x += dx / d * a.sp * dt / 1000; a.y += dy / d * a.sp * dt / 1000; }
+    var ang = Math.atan2(a.y - cy, a.x - cx); var df = ((sweep - ang) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+    if (df < .08) a.hit = 1; else a.hit = Math.max(0, a.hit - dt / 3800);
+  }
+  AG.forEach(function(a){
+    step(a); var al = .25 + .75 * a.hit;
+    c.fillStyle = "rgba(255,255,255," + al + ")"; c.beginPath(); c.arc(a.x, a.y, 3.2, 0, 7); c.fill();
+    c.strokeStyle = "rgba(0,200,255," + al * .7 + ")"; c.lineWidth = 1; c.beginPath(); c.arc(a.x, a.y, 7, 0, 7); c.stroke();
+    if (a.hit > .3){ c.fillStyle = "rgba(127,212,255," + a.hit + ")"; c.fillText("H-" + a.id, a.x + 9, a.y - 6); }
+  });
+  if (ALERT){
+    var n = Math.min(SPEC.length, 1 + ((now() - tAlert) / 15000 | 0));
+    for (var j = 0; j < n; j++){
+      var a = SPEC[j]; step(a);
+      var pu = .5 + .5 * Math.sin(t / 260 + j), al2 = .45 + .55 * Math.max(a.hit, pu * .6);
+      c.fillStyle = "rgba(255,30,60," + al2 + ")"; c.beginPath(); c.arc(a.x, a.y, 4.2, 0, 7); c.fill();
+      c.strokeStyle = "rgba(255,30,60," + (.6 * (1 - pu)) + ")"; c.lineWidth = 1.4; c.beginPath(); c.arc(a.x, a.y, 6 + 14 * pu, 0, 7); c.stroke();
+      c.fillStyle = "rgba(255,84,104," + al2 + ")"; c.fillText("SPÉCIMEN ?", a.x + 9, a.y + 3);
+    }
+  }
+  /* salle de contrôle */
+  var p = .5 + .5 * Math.sin(t / 500);
+  c.strokeStyle = "rgba(255,255,255," + (.4 + .5 * p) + ")"; c.lineWidth = 1.2; c.strokeRect(446, 198, 20, 20);
+  c.setTransform(1,0,0,1,0,0);
+  c.font = (11 * DPR) + "px 'Share Tech Mono',monospace"; c.fillStyle = "rgba(127,212,255,.7)";
+  c.fillText("BALAYAGE " + (sweep * 57.3 | 0).toString().padStart(3, "0") + "°   CONTACTS HUMAINS : " + AG.length + (ALERT ? "   SIGNATURES HOSTILES : " + Math.min(SPEC.length, 1 + ((now() - tAlert) / 15000 | 0)) : "   SIGNATURES HOSTILES : 0"), 12 * DPR, H - 12 * DPR);
+}
+
+/* — globe — */
+var glbC = cv("globe"), gctx = glbC.getContext("2d"), rot = 0;
+var CITIES = [[49.75,0.38],[48.85,2.35],[51.5,-0.12],[40.7,-74],[35.7,139.7],[-33.9,151.2],[55.75,37.6],[-23.5,-46.6],[30,31.2],[1.35,103.8],[37.8,-122.4],[19.4,-99.1],[-1.3,36.8],[64.1,-21.9],[59.3,18.1]];
+var ARCS = CITIES.slice(1).map(function(cc, i){ return { to: cc, ph: rnd(), sp: .15 + rnd() * .25, off: false }; });
+function v3(lat, lon){ var a = lat * Math.PI / 180, b = lon * Math.PI / 180; return [Math.cos(a) * Math.sin(b), Math.sin(a), Math.cos(a) * Math.cos(b)]; }
+function drawGlobe(dt, t){
+  var W = glbC.width, H = glbC.height, c = gctx; if (W < 20) return;
+  c.clearRect(0,0,W,H); rot += dt / 1000 * .12;
+  var R = Math.min(W, H) * .42, cx = W / 2, cy = H / 2 + H * .02, tilt = .35;
+  function pr(v){ var x = v[0] * Math.cos(rot) + v[2] * Math.sin(rot), z = -v[0] * Math.sin(rot) + v[2] * Math.cos(rot), y = v[1];
+    var y2 = y * Math.cos(tilt) - z * Math.sin(tilt), z2 = y * Math.sin(tilt) + z * Math.cos(tilt); return [cx + x * R, cy - y2 * R, z2]; }
+  var g = c.createRadialGradient(cx, cy, R * .2, cx, cy, R * 1.1); g.addColorStop(0, "rgba(0,200,255,.08)"); g.addColorStop(1, "rgba(0,200,255,0)");
+  c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R * 1.1, 0, 7); c.fill();
+  c.strokeStyle = "rgba(0,200,255,.5)"; c.lineWidth = 1; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.stroke();
+  c.lineWidth = 1 * DPR;
+  function line(pts){ c.beginPath(); var on = false; pts.forEach(function(v){ var p = pr(v); if (p[2] > 0){ if (on) c.lineTo(p[0], p[1]); else c.moveTo(p[0], p[1]); on = true; } else on = false; }); c.stroke(); }
+  c.strokeStyle = "rgba(0,200,255,.18)";
+  for (var lo = -180; lo < 180; lo += 20){ var pts = []; for (var la = -90; la <= 90; la += 6) pts.push(v3(la, lo)); line(pts); }
+  for (la = -60; la <= 60; la += 20){ pts = []; for (lo = -180; lo <= 180; lo += 6) pts.push(v3(la, lo)); line(pts); }
+  var home = v3(CITIES[0][0], CITIES[0][1]);
+  ARCS.forEach(function(a, i){
+    a.ph = (a.ph + dt / 1000 * a.sp) % 1;
+    if (ALERT && rnd() < dt / 9000) a.off = !a.off;
+    var to = v3(a.to[0], a.to[1]), seg = [];
+    for (var k = 0; k <= 30; k++){ var u = k / 30, lift = 1 + .22 * Math.sin(Math.PI * u);
+      var v = [home[0] + (to[0] - home[0]) * u, home[1] + (to[1] - home[1]) * u, home[2] + (to[2] - home[2]) * u], n = Math.hypot(v[0], v[1], v[2]) || 1;
+      seg.push([v[0] / n * lift, v[1] / n * lift, v[2] / n * lift]); }
+    var col = ALERT && a.off ? RED : BLUE;
+    c.strokeStyle = "rgba(" + col + ",.35)"; line(seg);
+    var hk = Math.round(a.ph * 30), hp = pr(seg[hk]);
+    if (hp[2] > 0){ c.fillStyle = "rgba(" + col + ",.95)"; c.beginPath(); c.arc(hp[0], hp[1], 2.2 * DPR, 0, 7); c.fill(); }
+    var pe = pr(to); if (pe[2] > 0){ c.fillStyle = ALERT && a.off ? "rgba(255,30,60," + (.4 + .6 * (Math.sin(t / 200 + i) > 0)) + ")" : "rgba(255,255,255,.8)"; c.fillRect(pe[0] - 1.5 * DPR, pe[1] - 1.5 * DPR, 3 * DPR, 3 * DPR); }
+  });
+  var hp0 = pr(home); if (hp0[2] > 0){
+    var pu = (t / 1200) % 1; c.strokeStyle = acc(1 - pu); c.lineWidth = 1.5 * DPR; c.beginPath(); c.arc(hp0[0], hp0[1], (3 + 16 * pu) * DPR, 0, 7); c.stroke();
+    c.fillStyle = "#fff"; c.beginPath(); c.arc(hp0[0], hp0[1], 3 * DPR, 0, 7); c.fill();
+    c.font = (10 * DPR) + "px 'Share Tech Mono',monospace"; c.fillStyle = ALERT ? "#ff5468" : "#7fd4ff"; c.fillText("FÉCAMP", hp0[0] + 7 * DPR, hp0[1] - 6 * DPR);
+  }
+  c.font = (10 * DPR) + "px 'Share Tech Mono',monospace"; c.fillStyle = "rgba(127,212,255,.7)";
+  var off = ARCS.filter(function(a){ return ALERT && a.off; }).length;
+  c.fillText("NŒUDS : " + (ARCS.length - off) + "/" + ARCS.length + (off ? "   HORS LIGNE : " + off : ""), 8 * DPR, H - 8 * DPR);
+}
+
+/* — jauge de menace + spectre — */
+var gaC = cv("gauge"), gac = gaC.getContext("2d"), spC = cv("spec"), spc = spC.getContext("2d"), lvl = 1, BARS = new Float32Array(56);
+var LV = ["VEILLE","VIGILANCE","ALERTE","CRITIQUE","CONFINEMENT ROMPU"];
+function drawGauge(dt, t){
+  var W = gaC.width, H = gaC.height, c = gac; if (W < 20) return;
+  var tgt = ALERT ? Math.min(5, 2.4 + (now() - tAlert) / 45000) + Math.sin(t / 900) * .12 : 1.15 + Math.sin(t / 3000) * .1;
+  lvl += (tgt - lvl) * Math.min(1, dt / 900);
+  c.clearRect(0,0,W,H);
+  var cx = W / 2, cy = H * .92, R = Math.min(W * .42, H * .8);
+  for (var i = 0; i < 5; i++){
+    var a0 = Math.PI + i / 5 * Math.PI + .03, a1 = Math.PI + (i + 1) / 5 * Math.PI - .03, on = lvl > i + .5;
+    c.strokeStyle = i >= 2 ? "rgba(255,30,60," + (on ? .95 : .2) + ")" : "rgba(0,200,255," + (on ? .95 : .2) + ")";
+    c.lineWidth = R * .16; c.beginPath(); c.arc(cx, cy, R, a0, a1); c.stroke();
+  }
+  var ang = Math.PI + Math.min(1, Math.max(0, (lvl - .5) / 5)) * Math.PI;
+  c.strokeStyle = "#fff"; c.lineWidth = 2 * DPR; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.cos(ang) * R * .82, cy + Math.sin(ang) * R * .82); c.stroke();
+  c.fillStyle = "#fff"; c.beginPath(); c.arc(cx, cy, 4 * DPR, 0, 7); c.fill();
+  var L = Math.max(1, Math.min(5, Math.round(lvl)));
+  $("lv").innerHTML = "NIVEAU " + L + "<small>" + LV[L - 1] + "</small>";
+  $("lv").style.color = L >= 3 ? "#ff5468" : "#fff";
+  /* spectre */
+  var w = spC.width, h = spC.height, s = spc; if (w < 20) return;
+  s.clearRect(0,0,w,h);
+  var n = BARS.length, bw = w / n, amp = ALERT ? 1 : .45;
+  for (i = 0; i < n; i++){
+    var target = amp * (.15 + .85 * Math.abs(Math.sin(t / 380 + i * .37) * Math.sin(t / 970 + i * .13)) * (rnd() * .5 + .5));
+    BARS[i] += (target - BARS[i]) * .25;
+    s.fillStyle = acc(.25 + .6 * BARS[i]); s.fillRect(i * bw + 1, h - BARS[i] * h * .9, bw - 2, BARS[i] * h * .9);
+  }
+  s.strokeStyle = "rgba(255,255,255,.75)"; s.lineWidth = 1.2 * DPR; s.beginPath();
+  for (var x = 0; x <= w; x += 3){ var y = h * .45 + Math.sin(x / 18 + t / 160) * h * .16 * amp + Math.sin(x / 5 + t / 50) * h * .05 * amp + (rnd() - .5) * h * .05 * amp; x ? s.lineTo(x, y) : s.moveTo(x, y); }
+  s.stroke();
+}
+
+/* — caméras — */
+var CAMS = [["CAM-04","COULOIR"],["CAM-11","AILE C"],["CAM-17","ESCALIER N."],["CAM-23","HALL"]];
+var camsEl = $("cams"), CAM = [];
+var NOISE = []; for (var nz = 0; nz < 6; nz++){ var nc = document.createElement("canvas"); nc.width = 160; nc.height = 90; var nx = nc.getContext("2d"), id = nx.createImageData(160, 90);
+  for (var q = 0; q < id.data.length; q += 4){ var v = rnd() * 255 | 0; id.data[q] = id.data[q+1] = id.data[q+2] = v; id.data[q+3] = 255; } nx.putImageData(id, 0, 0); NOISE.push(nc); }
+CAMS.forEach(function(cm, i){
+  var d = document.createElement("div"); d.className = "c";
+  d.innerHTML = '<canvas></canvas><span class="l">' + cm[0] + ' · ' + cm[1] + '</span><span class="r">ENR</span><span class="ts"></span><span class="mv">MOUVEMENT</span>';
+  camsEl.appendChild(d);
+  var cvs = d.querySelector("canvas"); ro.observe(cvs);
+  var off = document.createElement("canvas"); off.width = 160; off.height = 90;
+  CAM.push({ el: d, cv: cvs, ctx: cvs.getContext("2d"), off: off, oc: off.getContext("2d"), seed: rnd() * 10, fig: null, lost: 0, ts: d.querySelector(".ts"), depth: .3 + i * .15 });
+});
+function drawCams(dt, t){
+  var d = new Date(), stamp = "14.10 " + hms(d);
+  CAM.forEach(function(k, i){
+    var o = k.oc, W = 160, H = 90, vx = W * (.5 + .08 * Math.sin(k.seed)), vy = H * .45;
+    var fl = .85 + .15 * Math.sin(t / 90 + k.seed * 7) * (rnd() < .03 ? 3 : 1);
+    o.fillStyle = "#03080c"; o.fillRect(0,0,W,H);
+    o.fillStyle = "rgba(170,200,210," + (.08 * fl) + ")"; o.beginPath(); o.moveTo(0, H); o.lineTo(vx - 12, vy + 10); o.lineTo(vx + 12, vy + 10); o.lineTo(W, H); o.fill();
+    o.fillStyle = "rgba(200,230,240," + (.11 * fl) + ")"; o.beginPath(); o.moveTo(0, 0); o.lineTo(vx - 12, vy - 12); o.lineTo(vx + 12, vy - 12); o.lineTo(W, 0); o.fill();
+    o.strokeStyle = "rgba(190,220,230,.22)"; o.lineWidth = 1;
+    [[0,0],[W,0],[0,H],[W,H]].forEach(function(p){ o.beginPath(); o.moveTo(p[0], p[1]); o.lineTo(vx + (p[0] ? 12 : -12), vy + (p[1] ? 10 : -12)); o.stroke(); });
+    for (var z = 1; z < 5; z++){ var f = 1 / (1 + z * .9), xl = vx - (vx - 0) * f, xr = vx + (W - vx) * f, yt = vy - vy * f, yb = vy + (H - vy) * f * .95;
+      o.fillStyle = "rgba(120,150,160," + (.18 * f) + ")"; o.fillRect(xl + (vx - xl) * .02, yt + (yb - yt) * .25, (vx - xl) * .12, (yb - yt) * .6); o.fillRect(xr - (xr - vx) * .14, yt + (yb - yt) * .25, (xr - vx) * .12, (yb - yt) * .6);
+      if (z === 2){ o.fillStyle = "rgba(230,250,255," + (.25 * fl) + ")"; o.fillRect(vx - 8 * f * 3, yt + 2, 16 * f * 3, 2); } }
+    /* silhouette en alerte */
+    if (ALERT && !k.fig && rnd() < dt / 14000){ k.fig = { x: rnd() < .5 ? -10 : W + 10, dir: 0, z: .35 + rnd() * .5, sp: 6 + rnd() * 10 }; k.fig.dir = k.fig.x < 0 ? 1 : -1; }
+    if (k.fig){ var F = k.fig, sc = F.z; F.x += F.dir * F.sp * dt / 1000 * (1 + sc);
+      var fy = vy + (H - vy) * sc * .9, fh = 52 * sc;
+      o.fillStyle = "rgba(0,0,0,.92)"; o.beginPath(); o.ellipse(F.x, fy - fh * .88, fh * .09, fh * .11, 0, 0, 7); o.fill(); o.fillRect(F.x - fh * .12, fy - fh * .76, fh * .24, fh * .5); o.fillRect(F.x - fh * .09, fy - fh * .28, fh * .07, fh * .28); o.fillRect(F.x + fh * .02, fy - fh * .28, fh * .07, fh * .28);
+      if (F.x < -20 || F.x > W + 20) k.fig = null; }
+    k.el.classList.toggle("motion", !!k.fig);
+    if (ALERT && !k.lost && rnd() < dt / 40000) k.lost = 1500 + rnd() * 2500;
+    o.globalAlpha = k.lost > 0 ? .9 : .13; o.drawImage(NOISE[(t / 60 | 0) % NOISE.length], 0, 0); o.globalAlpha = 1;
+    if (k.lost > 0){ k.lost -= dt; o.fillStyle = "#fff"; o.font = "9px 'Share Tech Mono',monospace"; o.fillText("SIGNAL PERDU", W / 2 - 30, H / 2 + 3); if (k.lost <= 0) k.lost = 0; }
+    var r = rnd() < .02 ? (rnd() * H) | 0 : -1; if (r >= 0){ o.drawImage(k.off, 0, r, W, 4, 4, r, W, 4); }
+    var c = k.ctx, cw = k.cv.width, ch = k.cv.height; if (cw < 10) return;
+    c.imageSmoothingEnabled = true; c.drawImage(k.off, 0, 0, cw, ch);
+    c.fillStyle = "rgba(0,200,255,.05)"; c.fillRect(0, 0, cw, ch);
+    k.ts.textContent = stamp;
+  });
+}
+
+/* — boucle principale (30 i/s) — */
+var acc30 = 0;
+function frame(t){
+  var dt = Math.min(100, t - lastT); lastT = t; acc30 += dt;
+  if (acc30 >= 33){ var d = acc30; acc30 = 0;
+    try { drawMap(d, t); } catch(e){} try { drawGlobe(d, t); } catch(e){} try { drawGauge(d, t); } catch(e){} try { drawCams(d, t); } catch(e){} }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+setInterval(function(){ if (rnd() < (ALERT ? .55 : .2)){ document.body.classList.add("glitch"); setTimeout(function(){ document.body.classList.remove("glitch"); }, 150); } }, 5200);
+
+/* ═══ ÉTATS ═══ */
+var audio = null, soundOn = false, beepT = null;
+function beep(f, d, v){ if (!audio || !soundOn) return; var o = audio.createOscillator(), g = audio.createGain(); o.type = "square"; o.frequency.value = f; g.gain.value = 0; o.connect(g); g.connect(audio.destination);
+  var n = audio.currentTime; g.gain.linearRampToValueAtTime(v, n + .02); g.gain.linearRampToValueAtTime(0, n + d); o.start(n); o.stop(n + d + .05); }
+function alarm(){ clearInterval(beepT); beepT = setInterval(function(){ if (!ALERT) return; beep(880, .22, .05); setTimeout(function(){ beep(660, .3, .05); }, 260); }, 2600); }
+function setAlert(on, ts, silent){
+  if (on === ALERT) return;
+  ALERT = on; document.body.classList.toggle("alert", on);
+  $("state").textContent = on ? "ALERTE MAXIMALE" : "SYSTÈME NOMINAL";
+  setTexts();
+  try { localStorage.setItem("aur_cdc", JSON.stringify({ on: on, ts: ts || now() })); } catch(e){}
+  if (on){
+    tAlert = ts && ts < now() ? ts : now();
+    if (!silent && now() - tAlert < 20000){
+      $("boomb").textContent = "BOUTON D'URGENCE ACTIVÉ — SECTEUR FÉCAMP — " + hms(new Date(tAlert));
+      var b = $("boom"); b.classList.remove("on"); void b.offsetWidth; b.classList.add("on");
+      var f = $("flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go");
+      beep(440, .6, .08);
+    }
+    log("cr", "!! BOUTON D'URGENCE ACTIVÉ — PROTOCOLE D'URGENCE DÉCLENCHÉ");
+    log("cr", "!! Signature métamorphe détectée [DANGER IMMÉDIAT]");
+    alarm();
+  } else {
+    SIG.forEach(function(s){ s.st = 0; s.el.className = "sr"; s.el.querySelector(".st").textContent = "HUMAIN"; });
+    log("ok", "Retour en veille — <b>système nominal</b>");
+  }
+}
+function handle(msg, ts){
+  msg = String(msg || "").trim().toLowerCase();
+  if (msg === "alerte") setAlert(true, ts);
+  else if (msg === "veille") setAlert(false, ts);
+}
+
+/* écoute du canal : flux instantané + vérification toutes les 10 s (au cas où le flux est coupé) */
+var lastId = null, via = "";
+function take(m, how){ if (!m || m.event !== "message" || m.id === lastId) return; lastId = m.id; via = how; handle(m.message, m.time * 1000); }
+function poll(first){
+  fetch(NTFY + "/json?poll=1&since=" + (first ? "12h" : "latest"), { cache: "no-store" }).then(function(r){ return r.text(); }).then(function(tx){
+    var lines = tx.trim().split("\n").filter(Boolean), last = null;
+    lines.forEach(function(l){ try { var m = JSON.parse(l); if (m.event === "message") last = m; } catch(e){} });
+    if (last){ if (first){ lastId = last.id; via = "relève"; var msg = String(last.message).trim().toLowerCase(); if (msg === "alerte") setAlert(true, last.time * 1000, true); else setAlert(false, 0, true); } else take(last, "relève"); }
+  }).catch(function(){});
+}
+var es = null;
+function listen(){
+  try { if (es) es.close(); } catch(e){}
+  try { es = new EventSource(NTFY + "/sse"); es.onmessage = function(e){ try { take(JSON.parse(e.data), "flux"); } catch(_){} }; } catch(e){}
+}
+/* même machine : relais local (bouton pressé sur un autre onglet du même navigateur) */
+window.addEventListener("storage", function(e){ if (e.key === "aur_cdc_ping" && e.newValue){ try { var v = JSON.parse(e.newValue); handle(v.m, v.ts); } catch(_){} } });
+try { var saved = JSON.parse(localStorage.getItem("aur_cdc") || "null"); if (saved && saved.on) setAlert(true, saved.ts, true); } catch(e){}
+setTexts(); poll(true); listen();
+setInterval(function(){ if (!es || es.readyState !== 1){ poll(false); listen(); } }, 60000);
+window.addEventListener("online", function(){ poll(false); listen(); });
+
+/* ═══ maître du jeu : triple clic en bas à droite = basculer TOUS les écrans ═══ */
+var mj = [];
+$("mjdot").addEventListener("click", function(e){
+  e.stopPropagation(); var n = now(); mj = mj.filter(function(x){ return n - x < 2000; }); mj.push(n);
+  if (mj.length < 3) return; mj = [];
+  var next = ALERT ? "veille" : "alerte";
+  if (!confirm(ALERT ? "Remettre TOUS les écrans du centre de commandement en VEILLE ?" : "Déclencher l'ALERTE sur TOUS les écrans du centre de commandement ?")) return;
+  fetch(NTFY, { method: "POST", body: next }).catch(function(){});
+  handle(next);
+});
+
+/* ═══ plein écran, son, écran allumé ═══ */
+var help = $("help"); setTimeout(function(){ help.style.opacity = "0"; }, 12000);
+document.addEventListener("click", function(){
+  if (!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function(){});
+  if (!audio){ try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
+  if (audio) audio.resume();
+  soundOn = !soundOn || !document.fullscreenElement ? true : soundOn;
+  help.textContent = "SON ACTIVÉ"; help.style.opacity = "1"; setTimeout(function(){ help.style.opacity = "0"; }, 2500);
+  if (ALERT) alarm();
+});
+function wake(){ if (navigator.wakeLock) navigator.wakeLock.request("screen").catch(function(){}); }
+wake(); document.addEventListener("visibilitychange", function(){ if (!document.hidden) wake(); });
+window.__cdc = { setAlert: setAlert, get alert(){ return ALERT; }, get via(){ return via; }, get sse(){ return es ? es.readyState : -1; }, topic: TOPIC };
+})();
+</script>
+</body>
+</html>
