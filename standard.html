@@ -71,7 +71,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
     <div id="mapside">
       <div id="mapwrap"></div>
       <div id="cal"></div>
-      <div id="legend">POSITIONS FILTRÉES · CALÉES SUR LES COULOIRS</div>
+      <div id="legend">CARTE V3 · POSITIONS FILTRÉES · CALÉES SUR LES COULOIRS</div>
     </div>
   </div>
   <div id="ptt"></div>
@@ -100,8 +100,14 @@ for (var i = 1; i <= 5; i++){
   $("mosaic").appendChild(c);
 }
 var info = document.createElement("div"); info.className = "cell"; info.id = "mapcell";
-info.innerHTML = '<div class="ov" style="background:none;line-height:2"><div>MAINTENIR LE BOUTON DU GROUPE<br>POUR LUI PARLER<br><span style="color:#ff5468">CLAVIER : TOUCHES 1 À 5 · 0 = TOUS</span></div></div>';
+info.innerHTML = '<div class="ov" style="background:none;line-height:2;flex-direction:column;gap:8px"><div>MAINTENIR LE BOUTON DU GROUPE<br>POUR LUI PARLER<br><span style="color:#ff5468">CLAVIER : TOUCHES 1 À 5 · 0 = TOUS</span></div>' +
+  '<button id="recal" style="pointer-events:auto;background:rgba(0,200,255,.12);border:1px solid #00c8ff;color:#fff;padding:9px 14px;font:700 11px Share Tech Mono,monospace;letter-spacing:.15em;border-radius:4px">RECALER LES BALISES AU DÉPART</button>' +
+  '<div id="recal-msg" style="font-size:10px;color:#7fd4ff;min-height:1em"></div></div>';
 $("mosaic").appendChild(info);
+setTimeout(function(){ $("recal").onclick = function(){
+  if (!confirm("Tous les groupes sont-ils dans la salle de départ, balises allumées depuis au moins 30 s ?")) return;
+  var d = recalStart(); $("recal-msg").textContent = d.length ? "RECALÉES : " + d.join(" ") : "AUCUNE BALISE NE TRANSMET";
+}; }, 0);
 
 /* ── carte ── */
 var WALLS = "M0.1 111.8L0.1 123.3M136.7 143.4L136.7 184.2M0.0 111.9L195.4 111.9M195.3 103.8L195.3 112.1M0.0 123.1L195.4 123.1M136.6 143.5L195.4 143.5M195.3 123.0L195.3 143.6M136.6 184.0L195.4 184.0M195.3 184.0L195.3 284.8M195.1 103.8L214.8 103.8M214.7 103.8L214.7 143.6M214.7 184.0L214.7 268.5M195.1 284.7L214.8 284.7M214.7 276.5L214.7 284.8M214.6 143.5L234.3 143.5M234.3 143.4L234.3 147.6M214.6 268.4L253.9 268.4M253.8 264.3L253.8 268.5M214.6 276.6L253.9 276.6M253.8 276.5L253.8 304.2M253.7 264.3L312.4 264.3M253.7 304.0L312.4 304.0M312.3 264.3L312.3 304.2M234.2 147.6L331.9 147.6M331.7 0.0L331.7 147.6M331.7 0.1L351.5 0.1M351.3 0.0L351.3 4.2M351.3 15.3L351.3 35.7M351.3 43.7L351.3 147.6M351.2 4.2L370.9 4.2M351.2 15.4L370.9 15.4M370.8 4.1L370.8 15.5M351.2 43.8L429.4 43.8M351.2 147.6L429.4 147.6M429.3 43.7L429.3 147.6M214.6 184.0L429.4 184.0M429.3 184.0L429.3 231.9M351.2 35.7L448.9 35.7M448.9 0.0L448.9 35.7M448.9 43.7L448.9 147.6M448.9 184.0L448.9 188.2M448.8 0.1L468.5 0.1M448.8 43.8L468.5 43.8M468.4 0.0L468.4 43.9M448.8 188.1L488.0 188.1M429.2 231.8L488.0 231.8M487.8 188.0L487.8 231.9M448.8 184.0L546.5 184.0M546.4 184.0L546.4 248.2M546.4 248.1L566.1 248.1M565.9 184.0L565.9 248.2M448.8 143.5L624.6 143.5M624.5 88.5L624.5 143.6M565.8 184.0L624.6 184.0M624.5 184.0L624.5 219.8M624.3 88.5L644.0 88.5M643.9 88.5L643.9 143.6M643.9 184.0L643.9 204.5M643.8 143.5L663.5 143.5M643.8 184.0L663.5 184.0M663.5 143.4L663.5 184.2M643.8 204.4L702.6 204.4M624.3 219.7L702.6 219.7M702.4 204.3L702.4 219.8";
@@ -110,17 +116,12 @@ $("mapwrap").innerHTML = '<svg id="svg" viewBox="-30 -30 765 365"><path d="' + W
 var svg = $("svg");
 
 /* ═══ GÉORÉFÉRENCEMENT ═══
-   Le plan vient d'un tableur : colonnes et lignes n'ont pas la même largeur, donc la
-   correspondance est linéaire par morceaux, séparément est-ouest et nord-sud.
-   Repères appariés plan ↔ cadastre OpenStreetMap (mètres depuis 49.74694 N, 0.38806 E) :
-   – salle de départ (x 430-487, y 188-231) = bâtiment OSM 135937412 (E 2→31, N 14→-1)
-   – bâtiment G (x 620-660, haut y 88) = OSM G (E 54→76, N 62)
-   – colonne F (x 325-350) = OSM F (E -39→-22) ; aile ouest x 0 = E -178 ; extrémité est x 702 = E 110
-   – haut de L y 0 = N 111 ; annexe sud y 304 = N -42 (bâtiment W)
-   Contrôle : milieu de la salle de départ → (458, 210), là où la flèche est posée. */
+   Calage relevé sur la superposition faite par Julien (plan des murs posé sur le cadastre OSM) :
+   plan x 0 → 702.6 = 163.3 m ouest → 101.3 m est ; plan y 0 → 304.2 = 95.1 m nord → 42.8 m sud
+   (mètres depuis 49.74694 N, 0.38806 E). Salle de départ ≈ 8 m est, 1 m nord de ce point. */
 var LAT0 = 49.74694, LNG0 = 0.38806, RAD = Math.PI / 180, RT = 6371000, COS0 = Math.cos(LAT0 * RAD);
-var KX = [[-178,0],[-39,325],[-22,350],[2,430],[31,487],[54,620],[76,660],[110,702]];   /* mètres est → x */
-var KY = [[111,0],[62,88],[14,188],[-1,231],[-42,304]];                                    /* mètres nord → y */
+var KX = [[-163.33,0],[101.31,702.6]];   /* mètres est → x */
+var KY = [[95.07,0],[-42.78,304.2]];     /* mètres nord → y */
 var START = { x: 456, y: 208 };   /* salle de départ */
 function pw(t, K){
   var asc = K[1][0] > K[0][0], i = 1;
@@ -132,7 +133,7 @@ function toLatLng(e, n){ return [LAT0 + n / RT / RAD, LNG0 + e / (RT * COS0) / R
 function baseXY(e, n){ return { x: pw(e, KX), y: pw(n, KY) }; }
 /* calibrage sur place : chaque point relevé corrige localement (pondération inverse distance) */
 var CAL = [];
-try { CAL = JSON.parse(localStorage.getItem("aurora-calib2") || "[]") || []; } catch(e){ CAL = []; }
+try { CAL = JSON.parse(localStorage.getItem("aurora-calib3") || "[]") || []; } catch(e){ CAL = []; }
 function project(lat, lng){
   var m = toLocal(lat, lng), p = baseXY(m[0], m[1]);
   if (!CAL.length) return p;
@@ -222,7 +223,7 @@ function filterFix(s, f){
   var m = toLocal(f.lat, f.lng), R = Math.max(4, f.acc) * Math.max(4, f.acc), now = Date.now();
   if (!s.kf){ s.kf = { e: m[0], n: m[1], P: R, t: now, out: 0 }; return true; }
   var k = s.kf, dt = Math.max(0.2, (now - k.t) / 1000); k.t = now;
-  k.P += WALK_SPEED * WALK_SPEED * dt * dt + 1;
+  k.P += 16 * dt * dt + 2;   /* marge de mouvement : suit une marche normale sans retard */
   var de = m[0] - k.e, dn = m[1] - k.n, inn = Math.sqrt(de * de + dn * dn);
   if (inn > 3 * Math.sqrt(k.P + R) && k.out < 3){ k.out++; return false; }
   k.out = 0;
@@ -237,7 +238,7 @@ function addPos(g, p){
   if (p.ts) s.lastTs = p.ts; s.pos = { lat: p.lat, lng: p.lng, acc: p.acc || 30 };
   if (!WALK || (p.acc || 99) > 60) return;
   if (!filterFix(s, s.pos)) return;
-  var ll = toLatLng(s.kf.e, s.kf.n), tgt = project(ll[0], ll[1]), tc = cell(tgt.x, tgt.y);
+  var o = OFF[g] || [0, 0], ll = toLatLng(s.kf.e + o[0], s.kf.n + o[1]), tgt = project(ll[0], ll[1]), tc = cell(tgt.x, tgt.y);
   s.est = tgt;
   if (s.cur === undefined){
     var ds = Math.hypot(tgt.x - START.x, tgt.y - START.y);
@@ -255,6 +256,23 @@ function addPos(g, p){
   if (pts.length > 1) s.anim = { pts: pts, t0: performance.now(), dur: Math.min(1400, 300 + pts.length * 8) };
   else s.disp = cxy(s.cur);
   drawBlip(g);
+}
+/* ── recalage au départ ──
+   Le GPS intérieur d'un téléphone se trompe souvent de 20-40 m, mais toujours à peu près dans le même sens
+   pendant une heure. Quand tous les groupes sont dans la salle de départ, on enregistre l'écart de chaque
+   balise : ensuite seul le DÉPLACEMENT mesuré compte, à partir du point de départ. */
+var OFF = {}; try { OFF = JSON.parse(localStorage.getItem("aurora-off") || "{}") || {}; } catch(e){ OFF = {}; }
+function startMeters(){ return [(START.x - KX[0][1]) * (KX[1][0] - KX[0][0]) / (KX[1][1] - KX[0][1]) + KX[0][0],
+                                (START.y - KY[0][1]) * (KY[1][0] - KY[0][0]) / (KY[1][1] - KY[0][1]) + KY[0][0]]; }
+function recalStart(){
+  var sm = startMeters(), done = [];
+  for (var g = 1; g <= 5; g++){
+    var s = G[g]; if (!s.kf) continue;
+    OFF[g] = [sm[0] - s.kf.e, sm[1] - s.kf.n];
+    s.cur = cell(START.x, START.y); s.anim = null; s.far = 0; s.disp = cxy(s.cur); drawBlip(g); done.push("G" + g);
+  }
+  try { localStorage.setItem("aurora-off", JSON.stringify(OFF)); } catch(e){}
+  return done;
 }
 function el(tag, attrs){ var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
 function drawBlip(g){
@@ -398,7 +416,7 @@ function drawCal(){
   $("cal-undo").onclick = function(){ CAL.pop(); saveCal(); };
   $("cal-clear").onclick = function(){ if (confirm("Effacer tous les points ?")){ CAL = []; saveCal(); } };
 }
-function saveCal(){ try { localStorage.setItem("aurora-calib2", JSON.stringify(CAL)); } catch(e){} drawCal(); }
+function saveCal(){ try { localStorage.setItem("aurora-calib3", JSON.stringify(CAL)); } catch(e){} drawCal(); }
 if (CALMODE){
   $("cal").classList.add("on");
   setInterval(drawCal, 2000);
@@ -424,7 +442,7 @@ $("go").addEventListener("click", function(){
     })
     .catch(function(e){ $("gerr").textContent = "MICRO REFUSÉ OU ABSENT — autorisez le micro puis réessayez (" + (e && e.name) + ")"; });
 });
-window.__aurora = { G: G, setTalk: setTalk, project: project, addPos: addPos, WALKAT: function(x,y){ return WALK ? WALK[cell(x,y)] : -1; }, toLatLng: toLatLng, baseXY: baseXY };
+window.__aurora = { recalStart: recalStart, startMeters: startMeters, G: G, setTalk: setTalk, project: project, addPos: addPos, WALKAT: function(x,y){ return WALK ? WALK[cell(x,y)] : -1; }, toLatLng: toLatLng, baseXY: baseXY };
 })();
 </script>
 </body>
