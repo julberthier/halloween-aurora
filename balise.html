@@ -113,7 +113,7 @@ document.addEventListener("visibilitychange", function(){ if (document.visibilit
 function gps(){
   if (!navigator.geolocation){ row("r-gps", "indisponible", false); return; }
   navigator.geolocation.watchPosition(function(p){
-    pos = { lat: p.coords.latitude, lng: p.coords.longitude, acc: Math.round(p.coords.accuracy) };
+    pos = { lat: p.coords.latitude, lng: p.coords.longitude, acc: Math.round(p.coords.accuracy), ts: p.timestamp };
     row("r-gps", "±" + pos.acc + " m", pos.acc <= 30);
     send();
   }, function(e){ row("r-gps", e.code === 1 ? "refusée" : "recherche…", false); },

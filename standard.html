@@ -71,7 +71,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
     <div id="mapside">
       <div id="mapwrap"></div>
       <div id="cal"></div>
-      <div id="legend">POSITIONS GPS LISSÉES · PRÉCISION 5-15 M</div>
+      <div id="legend">POSITIONS FILTRÉES · CALÉES SUR LES COULOIRS</div>
     </div>
   </div>
   <div id="ptt"></div>
@@ -109,67 +109,156 @@ $("mapwrap").innerHTML = '<svg id="svg" viewBox="-30 -30 765 365"><path d="' + W
   '" fill="none" stroke="rgba(0,200,255,.55)" stroke-width="2.5" stroke-linecap="square"/><g id="calg"></g><g id="blips"></g></svg>';
 var svg = $("svg");
 
-/* projection GPS → plan.
-   Sans calibrage : boîte approximative. Avec calibrage (points relevés sur place) :
-   similitude (échelle + rotation + translation) ajustée aux moindres carrés. */
-var BOUNDS = { lat1: 49.74735, lng1: 0.38690, lat2: 49.74570, lng2: 0.38895 };
-var CALIB_DEFAULT = [];   /* points figés après calibrage sur place */
+/* ═══ GÉORÉFÉRENCEMENT ═══
+   Le plan vient d'un tableur : colonnes et lignes n'ont pas la même largeur, donc la
+   correspondance est linéaire par morceaux, séparément est-ouest et nord-sud.
+   Repères appariés plan ↔ cadastre OpenStreetMap (mètres depuis 49.74694 N, 0.38806 E) :
+   – salle de départ (x 430-487, y 188-231) = bâtiment OSM 135937412 (E 2→31, N 14→-1)
+   – bâtiment G (x 620-660, haut y 88) = OSM G (E 54→76, N 62)
+   – colonne F (x 325-350) = OSM F (E -39→-22) ; aile ouest x 0 = E -178 ; extrémité est x 702 = E 110
+   – haut de L y 0 = N 111 ; annexe sud y 304 = N -42 (bâtiment W)
+   Contrôle : milieu de la salle de départ → (458, 210), là où la flèche est posée. */
+var LAT0 = 49.74694, LNG0 = 0.38806, RAD = Math.PI / 180, RT = 6371000, COS0 = Math.cos(LAT0 * RAD);
+var KX = [[-178,0],[-39,325],[-22,350],[2,430],[31,487],[54,620],[76,660],[110,702]];   /* mètres est → x */
+var KY = [[111,0],[62,88],[14,188],[-1,231],[-42,304]];                                    /* mètres nord → y */
+var START = { x: 456, y: 208 };   /* salle de départ */
+function pw(t, K){
+  var asc = K[1][0] > K[0][0], i = 1;
+  while (i < K.length - 1 && (asc ? t > K[i][0] : t < K[i][0])) i++;
+  var a = K[i-1], b = K[i]; return a[1] + (t - a[0]) * (b[1] - a[1]) / (b[0] - a[0]);
+}
+function toLocal(lat, lng){ return [(lng - LNG0) * RAD * RT * COS0, (lat - LAT0) * RAD * RT]; }
+function toLatLng(e, n){ return [LAT0 + n / RT / RAD, LNG0 + e / (RT * COS0) / RAD]; }
+function baseXY(e, n){ return { x: pw(e, KX), y: pw(n, KY) }; }
+/* calibrage sur place : chaque point relevé corrige localement (pondération inverse distance) */
 var CAL = [];
-try { CAL = JSON.parse(localStorage.getItem("aurora-calib") || "null") || CALIB_DEFAULT.slice(); } catch(e){ CAL = CALIB_DEFAULT.slice(); }
-var T = null, RAD = Math.PI / 180, R = 6371000;
-function toM(lat, lng, ref){ return [(lng - ref.lng) * RAD * R * Math.cos(ref.lat * RAD), (lat - ref.lat) * RAD * R]; }
-function bbox(lat, lng){
-  return { x: (lng - BOUNDS.lng1) / (BOUNDS.lng2 - BOUNDS.lng1) * 702, y: (BOUNDS.lat1 - lat) / (BOUNDS.lat1 - BOUNDS.lat2) * 304 };
-}
-function fit(){
-  if (!CAL.length){ T = null; return; }
-  var ref = CAL[0];
-  var z = CAL.map(function(p){ return toM(p.lat, p.lng, ref); });
-  var w = CAL.map(function(p){ return [p.x, -p.y]; });
-  var n = CAL.length, zm = [0,0], wm = [0,0];
-  for (var k = 0; k < n; k++){ zm[0] += z[k][0]/n; zm[1] += z[k][1]/n; wm[0] += w[k][0]/n; wm[1] += w[k][1]/n; }
-  var a;
-  if (n === 1){
-    /* un seul point : échelle et orientation de la boîte, recalage sur le point */
-    var p0 = bbox(ref.lat, ref.lng), p1 = bbox(ref.lat, ref.lng + 0.0005);
-    var dE = toM(ref.lat, ref.lng + 0.0005, ref)[0];
-    a = [(p1.x - p0.x) / dE, 0];
-  } else {
-    var nr = 0, ni = 0, den = 0;
-    for (k = 0; k < n; k++){
-      var zr = z[k][0] - zm[0], zi = z[k][1] - zm[1], wr = w[k][0] - wm[0], wi = w[k][1] - wm[1];
-      nr += wr * zr + wi * zi; ni += wi * zr - wr * zi; den += zr * zr + zi * zi;
-    }
-    a = den > 0 ? [nr / den, ni / den] : [1, 0];
-  }
-  var b = [wm[0] - (a[0]*zm[0] - a[1]*zm[1]), wm[1] - (a[0]*zm[1] + a[1]*zm[0])];
-  T = { ref: ref, a: a, b: b };
-}
+try { CAL = JSON.parse(localStorage.getItem("aurora-calib2") || "[]") || []; } catch(e){ CAL = []; }
 function project(lat, lng){
-  if (!T) return bbox(lat, lng);
-  var m = toM(lat, lng, T.ref);
-  return { x: T.a[0]*m[0] - T.a[1]*m[1] + T.b[0], y: -(T.a[0]*m[1] + T.a[1]*m[0] + T.b[1]) };
+  var m = toLocal(lat, lng), p = baseXY(m[0], m[1]);
+  if (!CAL.length) return p;
+  var sw = 0, dx = 0, dy = 0;
+  CAL.forEach(function(c){
+    var cm = toLocal(c.lat, c.lng), q = baseXY(cm[0], cm[1]);
+    var w = 1 / ((p.x - q.x) * (p.x - q.x) + (p.y - q.y) * (p.y - q.y) + 900);
+    sw += w; dx += w * (c.x - q.x); dy += w * (c.y - q.y);
+  });
+  return { x: p.x + dx / sw, y: p.y + dy / sw };
 }
-fit();
 
-/* lissage : moyenne pondérée (1/précision²) des 6 dernières mesures < 20 s */
-function smooth(h){
-  var now = Date.now(), sw = 0, la = 0, ln = 0, acc = 999;
-  h.forEach(function(p){ if (now - p.t > 20000) return; var wt = 1 / Math.max(3, p.acc) / Math.max(3, p.acc); sw += wt; la += p.lat * wt; ln += p.lng * wt; acc = Math.min(acc, p.acc); });
-  return sw ? { lat: la / sw, lng: ln / sw, acc: acc } : null;
+/* ═══ ZONE PRATICABLE : l'intérieur des murs du plan ═══ */
+var OX = -12, OY = -12, MW = 728, MH = 330, NC = MW * MH, WALK = null;
+function buildMask(){
+  var cv = document.createElement("canvas"); cv.width = MW; cv.height = MH;
+  var c = cv.getContext("2d");
+  c.translate(-OX, -OY); c.lineWidth = 3.2; c.lineCap = "square"; c.strokeStyle = "#000";
+  c.stroke(new Path2D(WALLS));
+  var px = c.getImageData(0, 0, MW, MH).data, wall = new Uint8Array(NC), out = new Uint8Array(NC), q = new Int32Array(NC), h = 0, t = 0, i;
+  for (i = 0; i < NC; i++) wall[i] = px[i * 4 + 3] > 30 ? 1 : 0;
+  for (i = 0; i < MW; i++){ q[t++] = i; q[t++] = NC - 1 - i; }
+  for (i = 0; i < MH; i++){ q[t++] = i * MW; q[t++] = i * MW + MW - 1; }
+  for (i = 0; i < t; i++) out[q[i]] = 1;
+  while (h < t){
+    var k = q[h++], x = k % MW, y = (k / MW) | 0;
+    if (x > 0 && !out[k-1] && !wall[k-1]){ out[k-1] = 1; q[t++] = k-1; }
+    if (x < MW-1 && !out[k+1] && !wall[k+1]){ out[k+1] = 1; q[t++] = k+1; }
+    if (y > 0 && !out[k-MW] && !wall[k-MW]){ out[k-MW] = 1; q[t++] = k-MW; }
+    if (y < MH-1 && !out[k+MW] && !wall[k+MW]){ out[k+MW] = 1; q[t++] = k+MW; }
+  }
+  /* praticable = intérieur des murs ; on exclut aussi la bande de 2 px collée au mur */
+  WALK = new Uint8Array(NC);
+  for (i = 0; i < NC; i++){ if (wall[i] || out[i]) continue; var x0 = i % MW, y0 = (i / MW) | 0, ok = 1;
+    for (var dy = -2; dy <= 2 && ok; dy++) for (var dx = -2; dx <= 2; dx++){ var xx = x0 + dx, yy = y0 + dy; if (xx < 0 || yy < 0 || xx >= MW || yy >= MH || wall[yy * MW + xx]){ ok = 0; break; } }
+    WALK[i] = ok; }
+  var n = 0; for (i = 0; i < NC; i++) n += WALK[i];
+  window.__walkCells = n;
 }
+function cell(x, y){
+  var cx = Math.max(0, Math.min(MW - 1, Math.round(x - OX))), cy = Math.max(0, Math.min(MH - 1, Math.round(y - OY)));
+  return cy * MW + cx;
+}
+function cxy(k){ return { x: k % MW + OX, y: ((k / MW) | 0) + OY }; }
+var D8 = [[-1,0,1],[1,0,1],[0,-1,1],[0,1,1],[-1,-1,1.414],[1,-1,1.414],[-1,1,1.414],[1,1,1.414]];
+/* meilleur point praticable ATTEIGNABLE depuis la position affichée, sans traverser de mur */
+function reach(from, target, radius){
+  var dist = new Float32Array(0), seen = new Map(), heap = [[0, from]], best = from, bd = 1e18, tg = cxy(target);
+  seen.set(from, -1);
+  var cost = new Map(); cost.set(from, 0);
+  while (heap.length){
+    /* file simple (Dijkstra approché par BFS en couches) */
+    var cur = heap.shift(), k = cur[1], g0 = cur[0];
+    var p = cxy(k), dd = (p.x - tg.x) * (p.x - tg.x) + (p.y - tg.y) * (p.y - tg.y);
+    if (dd < bd){ bd = dd; best = k; }
+    for (var j = 0; j < 8; j++){
+      var nx = (k % MW) + D8[j][0], ny = ((k / MW) | 0) + D8[j][1];
+      if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue;
+      var nk = ny * MW + nx, ng = g0 + D8[j][2];
+      if (!WALK[nk] || ng > radius || cost.has(nk)) continue;
+      cost.set(nk, ng); seen.set(nk, k); heap.push([ng, nk]);
+    }
+  }
+  var path = [], c = best; while (c !== -1 && c !== undefined){ path.push(c); c = seen.get(c); }
+  return { cell: best, d: Math.sqrt(bd), path: path.reverse() };
+}
+/* point praticable le plus proche (sans contrainte de trajet) */
+function nearest(target){
+  if (WALK[target]) return target;
+  var seen = new Uint8Array(NC), q = [target], h = 0; seen[target] = 1;
+  while (h < q.length){
+    var k = q[h++], x = k % MW, y = (k / MW) | 0;
+    for (var j = 0; j < 4; j++){
+      var nx = x + D8[j][0], ny = y + D8[j][1]; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue;
+      var nk = ny * MW + nx; if (seen[nk]) continue; if (WALK[nk]) return nk; seen[nk] = 1; q.push(nk);
+    }
+  }
+  return cell(START.x, START.y);
+}
+
+/* ═══ FILTRE DE POSITION (Kalman, en mètres) ═══
+   – fixes de mauvaise précision (> 60 m) ignorés ;
+   – sauts improbables écartés tant qu'ils ne se répètent pas ;
+   – vitesse de marche plafonnée par le bruit de processus. */
+var WALK_SPEED = 1.6;  /* m/s */
+function filterFix(s, f){
+  var m = toLocal(f.lat, f.lng), R = Math.max(4, f.acc) * Math.max(4, f.acc), now = Date.now();
+  if (!s.kf){ s.kf = { e: m[0], n: m[1], P: R, t: now, out: 0 }; return true; }
+  var k = s.kf, dt = Math.max(0.2, (now - k.t) / 1000); k.t = now;
+  k.P += WALK_SPEED * WALK_SPEED * dt * dt + 1;
+  var de = m[0] - k.e, dn = m[1] - k.n, inn = Math.sqrt(de * de + dn * dn);
+  if (inn > 3 * Math.sqrt(k.P + R) && k.out < 3){ k.out++; return false; }
+  k.out = 0;
+  var K = k.P / (k.P + R); k.e += K * de; k.n += K * dn; k.P *= (1 - K);
+  return true;
+}
+
 function addPos(g, p){
   if (!p || typeof p.lat !== "number") return;
-  var h = G[g].hist; h.push({ lat: p.lat, lng: p.lng, acc: p.acc || 30, t: Date.now() });
-  while (h.length > 6) h.shift();
-  G[g].pos = smooth(h);
+  var s = G[g];
+  if (p.ts && p.ts === s.lastTs) return;   /* même relevé renvoyé : ignoré */
+  if (p.ts) s.lastTs = p.ts; s.pos = { lat: p.lat, lng: p.lng, acc: p.acc || 30 };
+  if (!WALK || (p.acc || 99) > 60) return;
+  if (!filterFix(s, s.pos)) return;
+  var ll = toLatLng(s.kf.e, s.kf.n), tgt = project(ll[0], ll[1]), tc = cell(tgt.x, tgt.y);
+  s.est = tgt;
+  if (s.cur === undefined){
+    var ds = Math.hypot(tgt.x - START.x, tgt.y - START.y);
+    s.cur = ds < 90 ? cell(START.x, START.y) : nearest(tc);
+    s.disp = cxy(s.cur); drawBlip(g); return;
+  }
+  var dt = Math.max(1, (Date.now() - (s.mt || Date.now())) / 1000); s.mt = Date.now();
+  var r = reach(s.cur, tc, Math.min(160, 14 * dt + 24));
+  if (r.d > 45){
+    s.far = s.far || Date.now();
+    if (Date.now() - s.far > 8000){ s.cur = nearest(tc); s.far = 0; s.anim = null; s.disp = cxy(s.cur); drawBlip(g); return; }
+  } else s.far = 0;
+  s.cur = r.cell;
+  var pts = r.path.map(cxy);   /* chaque case du trajet : jamais de raccourci à travers un angle */
+  if (pts.length > 1) s.anim = { pts: pts, t0: performance.now(), dur: Math.min(1400, 300 + pts.length * 8) };
+  else s.disp = cxy(s.cur);
   drawBlip(g);
 }
 function el(tag, attrs){ var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
 function drawBlip(g){
-  var p = G[g].pos; if (!p) return;
-  var xy = project(p.lat, p.lng);
-  xy.x = Math.max(-25, Math.min(730, xy.x)); xy.y = Math.max(-25, Math.min(330, xy.y));
+  var s = G[g], xy = s.disp; if (!xy) return;
   var grp = $("bl-" + g);
   if (!grp){
     grp = el("g", { id: "bl-" + g });
@@ -179,9 +268,22 @@ function drawBlip(g){
     $("blips").appendChild(grp);
   }
   grp.setAttribute("transform", "translate(" + xy.x.toFixed(1) + " " + xy.y.toFixed(1) + ")");
-  var stale = Date.now() - G[g].seen > 12000;
-  grp.childNodes[1].setAttribute("class", stale ? "blip stale" : "blip");
+  grp.childNodes[1].setAttribute("class", Date.now() - s.seen > 12000 ? "blip stale" : "blip");
 }
+/* déplacement animé le long du couloir (jamais à travers un mur) */
+(function anim(){
+  var now = performance.now();
+  for (var g = 1; g <= 5; g++){
+    var s = G[g], a = s.anim; if (!a) continue;
+    var u = Math.min(1, (now - a.t0) / a.dur), f = u * (a.pts.length - 1), i = Math.floor(f), r = f - i;
+    var p = a.pts[i], q = a.pts[Math.min(i + 1, a.pts.length - 1)];
+    s.disp = { x: p.x + (q.x - p.x) * r, y: p.y + (q.y - p.y) * r };
+    if (u >= 1) s.anim = null;
+    drawBlip(g);
+  }
+  requestAnimationFrame(anim);
+})();
+try { buildMask(); } catch(e){ console.warn("masque", e); }
 
 /* ── état des groupes (1 Hz) ── */
 setInterval(function(){
@@ -191,7 +293,7 @@ setInterval(function(){
     else if (age > 12){ o.style.display = "flex"; o.className = "ov lost"; o.textContent = "SIGNAL PERDU — " + age + " S"; }
     else if (!v.videoWidth){ o.style.display = "flex"; o.className = "ov"; o.textContent = "LIAISON ÉTABLIE — VIDÉO EN COURS…"; }
     else o.style.display = "none";
-    $("m-" + g).textContent = s.pos ? "±" + s.pos.acc + " M · " + (age >= 0 ? age + " S" : "") : (s.seen ? "GPS EN ATTENTE" : "—");
+    $("m-" + g).textContent = s.pos ? "±" + s.pos.acc + " M · " + (age >= 0 ? age + " S" : "") + (s.pos.acc > 60 ? " · GPS FAIBLE" : "") : (s.seen ? "GPS EN ATTENTE" : "—");
     drawBlip(g);
   }
 }, 1000);
@@ -279,30 +381,33 @@ function drawCal(){
     cg.appendChild(el("circle", { cx: p.x, cy: p.y, r: 9, "class": "calpt" }));
     var t = el("text", { x: p.x + 11, y: p.y + 16, "class": "blbl", style: "fill:#00ff6a;font-size:13px" }); t.textContent = "P" + (i + 1); cg.appendChild(t);
   });
-  if (!CALMODE) return;
-  var res = "";
-  if (CAL.length >= 3 && T){
-    var e = 0; CAL.forEach(function(p){ var q = project(p.lat, p.lng); e += Math.hypot(q.x - p.x, q.y - p.y); });
-    res = " · écart moyen " + (e / CAL.length).toFixed(1) + " px";
+  for (var g = 1; g <= 5; g++){
+    var s = G[g], m = $("est-" + g);
+    if (!CALMODE || !s.est){ if (m) m.remove(); continue; }
+    if (!m){ m = el("circle", { id: "est-" + g, r: 4, style: "fill:#ff0;opacity:.8" }); cg.appendChild(m); }
+    m.setAttribute("cx", s.est.x); m.setAttribute("cy", s.est.y);
   }
-  var btns = ""; for (var g = 1; g <= 5; g++) btns += '<button data-ref="' + g + '" class="' + (g === calRef ? "sel" : "") + '">BALISE G' + g + '</button>';
-  $("cal").innerHTML = "<b>CALIBRAGE</b> — placez-vous avec la balise choisie à un endroit précis, attendez 20 s, puis touchez cet endroit sur le plan. " +
-    "Deux points éloignés suffisent (le départ + l'autre bout du bâtiment), trois c'est mieux.<br>" + btns +
-    '<br>Points : <b>' + CAL.length + '</b>' + res + ' <button id="cal-undo">ANNULER LE DERNIER</button><button id="cal-clear">TOUT EFFACER</button>' +
-    '<textarea readonly id="cal-json">' + JSON.stringify(CAL) + '</textarea>';
+  if (!CALMODE) return;
+  var btns = ""; for (var k = 1; k <= 5; k++) btns += '<button data-ref="' + k + '" class="' + (k === calRef ? "sel" : "") + '">BALISE G' + k + '</button>';
+  var ps = G[calRef].pos;
+  $("cal").innerHTML = "<b>CALIBRAGE</b> — avec la balise choisie, placez-vous à un endroit précis, attendez 20 s, puis touchez cet endroit sur le plan. " +
+    "Point jaune = position GPS brute filtrée. Le point de départ est déjà calé ; ajoutez 2 ou 3 points aux extrémités du bâtiment.<br>" + btns +
+    "<br>Balise G" + calRef + " : " + (ps ? ps.lat.toFixed(6) + ", " + ps.lng.toFixed(6) + " ±" + ps.acc + " m" : "aucune position") +
+    ' · points : <b>' + CAL.length + '</b> <button id="cal-undo">ANNULER LE DERNIER</button><button id="cal-clear">TOUT EFFACER</button>';
   [].forEach.call($("cal").querySelectorAll("[data-ref]"), function(b){ b.onclick = function(){ calRef = +b.dataset.ref; drawCal(); }; });
   $("cal-undo").onclick = function(){ CAL.pop(); saveCal(); };
   $("cal-clear").onclick = function(){ if (confirm("Effacer tous les points ?")){ CAL = []; saveCal(); } };
 }
-function saveCal(){ try { localStorage.setItem("aurora-calib", JSON.stringify(CAL)); } catch(e){} fit(); drawCal(); for (var g = 1; g <= 5; g++) drawBlip(g); }
+function saveCal(){ try { localStorage.setItem("aurora-calib2", JSON.stringify(CAL)); } catch(e){} drawCal(); }
 if (CALMODE){
   $("cal").classList.add("on");
+  setInterval(drawCal, 2000);
   svg.addEventListener("click", function(e){
-    var pos = G[calRef].pos;
-    if (!pos){ alert("Aucune position reçue de la balise G" + calRef + "."); return; }
+    var s = G[calRef];
+    if (!s.kf){ alert("Aucune position reçue de la balise G" + calRef + "."); return; }
     var pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
-    var q = pt.matrixTransform(svg.getScreenCTM().inverse());
-    CAL.push({ lat: +pos.lat.toFixed(7), lng: +pos.lng.toFixed(7), x: +q.x.toFixed(1), y: +q.y.toFixed(1) });
+    var q = pt.matrixTransform(svg.getScreenCTM().inverse()), ll = toLatLng(s.kf.e, s.kf.n);
+    CAL.push({ lat: +ll[0].toFixed(7), lng: +ll[1].toFixed(7), x: +q.x.toFixed(1), y: +q.y.toFixed(1) });
     saveCal();
   });
 }
@@ -319,7 +424,7 @@ $("go").addEventListener("click", function(){
     })
     .catch(function(e){ $("gerr").textContent = "MICRO REFUSÉ OU ABSENT — autorisez le micro puis réessayez (" + (e && e.name) + ")"; });
 });
-window.__aurora = { G: G, setTalk: setTalk, project: project };
+window.__aurora = { G: G, setTalk: setTalk, project: project, addPos: addPos, WALKAT: function(x,y){ return WALK ? WALK[cell(x,y)] : -1; }, toLatLng: toLatLng, baseXY: baseXY };
 })();
 </script>
 </body>
