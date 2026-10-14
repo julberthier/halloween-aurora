@@ -194,7 +194,9 @@ AURORA.boot("alert");
 AURORA.prefetch(["video.html"]);
 AURORA.sfxPreload(["bip","succes"]);
 
+var fired = false;   /* un seul déclenchement, même si clic + touche ou appuis répétés */
 document.getElementById("big-red").addEventListener("click", function(){
+  if (fired) return; fired = true;
   var b = this;
   b.classList.add("pressed");
   AURORA.sfx("succes", 0.5);
@@ -205,6 +207,12 @@ document.getElementById("big-red").addEventListener("click", function(){
   setTimeout(function(){
     AURORA.goPage({ url:"video.html", stage:"video", fx:"blast" });
   }, 420);
+});
+/* bouton rouge physique (mini clavier) : la touche F13 équivaut à un clic sur le bouton */
+document.addEventListener("keydown", function(e){
+  if (e.key !== "F13" || e.repeat) return;
+  e.preventDefault();
+  document.getElementById("big-red").click();
 });
 })();
 </script>
